@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "738760302648",
+    "project_id": "carezy-3c815",
+    "storage_bucket": "carezy-3c815.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:738760302648:android:fa0d8939bd70a87d81c6cd",
+        "android_client_info": {
+          "package_name": "com.example.carezy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0Q4O6WxqYf0tAvj-VlE41es659i531-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
