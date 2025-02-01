@@ -20,7 +20,7 @@ class AuthAPI {
     return null;
   }
 
-  // 🔹 Login function (Now Stores Token in Secure Storage)
+  // 🔹 Login function (Now clean)
   static Future<bool> login(String email, String password) async {
     final response = await http.post(
       Uri.parse("$baseUrl/login"),
@@ -28,40 +28,25 @@ class AuthAPI {
       body: jsonEncode({"email": email, "password": password}),
     );
 
-    print("🔹 Sending request to: ${Uri.parse("$baseUrl/login")}");
-    print("🔹 Login Response Status: ${response.statusCode}");
-    print("🔹 Login Response Body: ${response.body}");
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['token'];
       
       if (token != null) {
         await storage.write(key: "token", value: token);
-        print("✅ Token stored successfully: $token");
         return true;
-      } else {
-        print("❌ Token missing in response");
       }
-    } else {
-      print("❌ Login failed, status code: ${response.statusCode}");
     }
     return false;
   }
 
-  // 🔹 Retrieve Token for Debugging
+  // 🔹 Retrieve Token
   static Future<void> checkStoredToken() async {
-    final token = await storage.read(key: "token");
-    if (token != null) {
-      print("🔍 Retrieved Token from Secure Storage: $token");
-    } else {
-      print("❌ Token not found in Secure Storage.");
-    }
+    await storage.read(key: "token");
   }
 
-  // 🔹 Logout function (Deletes Token)
+  // 🔹 Logout function
   static Future<void> logout() async {
     await storage.delete(key: "token");
-    print("✅ Token deleted. User logged out.");
   }
 }

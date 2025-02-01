@@ -2,42 +2,44 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv package
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is ready
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env from assets (for Flutter Web compatibility)
+  await dotenv.load(fileName: "assets/.env");
 
   try {
     if (kIsWeb) {
       await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: "AIzaSyC9eJHMOqUY6XwnNVANzJLMOahEHjdA1jE",
-          authDomain: "carezy-3c815.firebaseapp.com",
-          projectId: "carezy-3c815",
-          storageBucket: "carezy-3c815.appspot.com",  // Fixed incorrect URL
-          messagingSenderId: "738760302648",
-          appId: "1:738760302648:web:a46b1acef48d09fd81c6cd",
-          measurementId: "G-6SJCHPZE6R",
+        options: FirebaseOptions(
+          apiKey: dotenv.env['FIREBASE_API_KEY']!,
+          authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+          projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+          storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+          messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+          appId: dotenv.env['FIREBASE_APP_ID']!,
+          measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID']!,
         ),
       );
     } else {
       await Firebase.initializeApp();
     }
-    print("✅ Firebase Initialized Successfully");
   } catch (e) {
-    print("❌ Firebase Initialization Error: $e");
+    runApp(ErrorApp(message: "Failed to initialize Firebase"));
+    return;
   }
 
   final storage = FlutterSecureStorage();
-
-  // Retrieve token after Firebase is initialized
   String? token;
+
   try {
     token = await storage.read(key: "token");
-    print("🔍 Retrieved Token on App Start: $token");
   } catch (e) {
-    print("❌ Error retrieving token: $e");
+    token = null;
   }
 
   runApp(CarezyApp(token: token));
@@ -56,6 +58,21 @@ class CarezyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/home': (context) => HomeScreen(),
       },
+    );
+  }
+}
+
+// 🔹 Show an error message if Firebase fails to initialize
+class ErrorApp extends StatelessWidget {
+  final String message;
+  ErrorApp({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(child: Text(message, style: TextStyle(fontSize: 18, color: Colors.red))),
+      ),
     );
   }
 }
