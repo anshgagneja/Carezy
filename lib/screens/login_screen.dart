@@ -44,9 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Keeps card compact
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  AnimatedLogo(), // 🔹 Beautiful centered logo
+                  AnimatedLogo(), // ✅ Centered rotating logo
                   SizedBox(height: 20),
                   Text("Welcome to Carezy",
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),

@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv package
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/task_screen.dart'; // ✅ Added Task Screen
 import 'utils/app_theme.dart';
 
 void main() async {
@@ -61,6 +62,7 @@ class CarezyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/home': (context) => HomeScreen(),
+        '/tasks': (context) => TaskScreen(), // ✅ Added route for tasks
       },
     );
   }

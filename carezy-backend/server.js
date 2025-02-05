@@ -147,6 +147,70 @@ app.post('/ai/analyze-mood', authenticate, async (req, res) => {
     }
 });
 
+// 🔹 Add a New Task
+app.post('/tasks', authenticate, async (req, res) => {
+    try {
+        const { title, description, due_date } = req.body;
+        const user_id = req.user.userId;
+
+        const result = await pool.query(
+            `INSERT INTO tasks (user_id, title, description, due_date) 
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [user_id, title, description, due_date]
+        );
+
+        res.json({ message: 'Task added successfully', task: result.rows[0] });
+    } catch (err) {
+        console.error("❌ Task Creation Error:", err);
+        res.status(500).json({ error: 'Failed to create task' });
+    }
+});
+
+// 🔹 Get All Tasks for Logged-in User
+app.get('/tasks', authenticate, async (req, res) => {
+    try {
+        const user_id = req.user.userId;
+        const tasks = await pool.query('SELECT * FROM tasks WHERE user_id = $1 ORDER BY created_at DESC', [user_id]);
+
+        res.json(tasks.rows);
+    } catch (err) {
+        console.error("❌ Fetch Tasks Error:", err);
+        res.status(500).json({ error: 'Failed to fetch tasks' });
+    }
+});
+
+// 🔹 Update Task Status (Mark as Completed)
+app.put('/tasks/:task_id', authenticate, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const { task_id } = req.params;
+
+        const result = await pool.query(
+            `UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING *`,
+            [status, task_id]
+        );
+
+        res.json({ message: 'Task updated successfully', task: result.rows[0] });
+    } catch (err) {
+        console.error("❌ Task Update Error:", err);
+        res.status(500).json({ error: 'Failed to update task' });
+    }
+});
+
+// 🔹 Delete a Task
+app.delete('/tasks/:task_id', authenticate, async (req, res) => {
+    try {
+        const { task_id } = req.params;
+        await pool.query('DELETE FROM tasks WHERE task_id = $1', [task_id]);
+
+        res.json({ message: 'Task deleted successfully' });
+    } catch (err) {
+        console.error("❌ Task Deletion Error:", err);
+        res.status(500).json({ error: 'Failed to delete task' });
+    }
+});
+
+
 // 🔹 Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
