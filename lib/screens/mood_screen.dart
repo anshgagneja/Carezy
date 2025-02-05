@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../api/mood_api.dart';
+import '../widgets/mood_slider.dart';
+import '../widgets/mood_graph.dart';
+import '../widgets/ai_suggestion.dart';
 
 class MoodScreen extends StatefulWidget {
   @override
@@ -63,61 +67,39 @@ class _MoodScreenState extends State<MoodScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Mood Tracking")),
-      body: SingleChildScrollView(  // 🔹 Fix overflow issue by enabling scrolling
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,  // 🔹 Align content to the left
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("How are you feeling today?", style: TextStyle(fontSize: 18)),
-              Slider(
+
+              MoodSlider(
                 value: selectedMood.toDouble(),
-                min: 1,
-                max: 10,
-                divisions: 9,
-                label: selectedMood.toString(),
                 onChanged: (value) {
                   setState(() {
                     selectedMood = value.toInt();
                   });
                 },
               ),
+
               TextField(controller: noteController, decoration: InputDecoration(labelText: "Notes")),
               SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: isLogging ? null : logMood,
-                child: isLogging ? CircularProgressIndicator() : Text("Log Mood"),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: isFetchingAI ? null : getAISuggestion,
-                child: isFetchingAI ? CircularProgressIndicator() : Text("Get AI Suggestion"),
-              ),
 
-              if (aiSuggestion.isNotEmpty)  // 🔹 AI suggestion will appear dynamically
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Text("AI Suggestion: $aiSuggestion", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
+              ElevatedButton(onPressed: logMood, child: Text("Log Mood")),
+              SizedBox(height: 10),
+
+              ElevatedButton(onPressed: getAISuggestion, child: Text("Get AI Suggestion")),
+
+              AISuggestionWidget(aiSuggestion: aiSuggestion),
 
               SizedBox(height: 20),
 
-              Text("Mood History:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("Your Mood Trends", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 20),
 
-              isLoading
-                  ? CircularProgressIndicator()
-                  : ListView.builder(
-                      shrinkWrap: true,  // 🔹 Prevents ListView from taking unlimited space
-                      physics: NeverScrollableScrollPhysics(),  // 🔹 Disables independent scrolling of ListView
-                      itemCount: moodHistory.length,
-                      itemBuilder: (context, index) {
-                        final mood = moodHistory[index];
-                        return ListTile(
-                          title: Text("Mood Score: ${mood['mood_score']}"),
-                          subtitle: Text("Note: ${mood['note']}"),
-                        );
-                      },
-                    ),
+              isLoading ? CircularProgressIndicator() : MoodGraph(moodHistory: moodHistory),
             ],
           ),
         ),

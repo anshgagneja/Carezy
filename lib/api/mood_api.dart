@@ -6,7 +6,38 @@ class MoodAPI {
   static const String baseUrl = "http://localhost:5000";
   static final storage = FlutterSecureStorage();
 
-  // 🔹 Log Mood
+  // 🔹 Fetch Mood History (Uses `created_at` Instead of `timestamp`)
+  static Future<List<dynamic>?> getMoodHistory() async {
+    final token = await storage.read(key: "token");
+    if (token == null) return null;
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/moods"),
+      headers: {
+        "Authorization": "Bearer $token"
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> moods = jsonDecode(response.body);
+
+      // 🔹 Remove entries where `created_at` is null
+      moods.removeWhere((mood) => mood['created_at'] == null);
+
+      // 🔹 Sort moods by `created_at`
+      moods.sort((a, b) {
+        String timestampA = a['created_at'] ?? "2000-01-01T00:00:00Z";  
+        String timestampB = b['created_at'] ?? "2000-01-01T00:00:00Z";
+
+        return DateTime.parse(timestampA).compareTo(DateTime.parse(timestampB));
+      });
+
+      return moods;
+    }
+    return null;
+  }
+
+  // 🔹 Log Mood Entry
   static Future<bool> logMood(int moodScore, String note) async {
     final token = await storage.read(key: "token");
     if (token == null) return false;
@@ -23,21 +54,6 @@ class MoodAPI {
     return response.statusCode == 200;
   }
 
-  // 🔹 Fetch Mood History
-  static Future<List<dynamic>?> getMoodHistory() async {
-    final token = await storage.read(key: "token");
-    if (token == null) return null;
-
-    final response = await http.get(
-      Uri.parse("$baseUrl/moods"),
-      headers: {
-        "Authorization": "Bearer $token"
-      },
-    );
-
-    return response.statusCode == 200 ? jsonDecode(response.body) : null;
-  }
-
   // 🔹 AI Mood Analysis
   static Future<String?> analyzeMood(String mood) async {
     final token = await storage.read(key: "token");
@@ -52,6 +68,9 @@ class MoodAPI {
       body: jsonEncode({"mood": mood}),
     );
 
-    return response.statusCode == 200 ? jsonDecode(response.body)['suggestion'] : null;
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body)['suggestion'];
+    }
+    return null;
   }
 }

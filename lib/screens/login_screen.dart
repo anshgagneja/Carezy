@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/auth_api.dart';
 import 'home_screen.dart';
+import '../widgets/animated_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,7 +13,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
 
-  // 🔹 Login Function (Now Clean)
   void login() async {
     setState(() => isLoading = true);
     final success = await AuthAPI.login(emailController.text, passwordController.text);
@@ -31,11 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            AnimatedLogo(), // 🔹 New animated logo from v0.dev
+            SizedBox(height: 20),
             TextField(controller: emailController, decoration: InputDecoration(labelText: "Email")),
             TextField(controller: passwordController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
             SizedBox(height: 20),
