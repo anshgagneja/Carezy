@@ -55,7 +55,7 @@ class MoodAPI {
   }
 
   // 🔹 AI Mood Analysis
-  static Future<String?> analyzeMood(String mood) async {
+    static Future<String?> analyzeMood(int moodScore, String note) async {
     final token = await storage.read(key: "token");
     if (token == null) return null;
 
@@ -65,7 +65,10 @@ class MoodAPI {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json"
       },
-      body: jsonEncode({"mood": mood}),
+      body: jsonEncode({
+        "mood_score": moodScore, // 🔹 Now correctly sending mood_score
+        "note": note // 🔹 Now correctly sending the note
+      }),
     );
 
     if (response.statusCode == 200) {

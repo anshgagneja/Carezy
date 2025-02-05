@@ -33,7 +33,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// 🔹 User Login
+// 🔹 User Login (JWT Valid for 1 Year)
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -51,7 +51,7 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign(
             { userId: user.rows[0].id, email: user.rows[0].email },
             process.env.JWT_SECRET,
-            { expiresIn: '399d' }
+            { expiresIn: '365d' } // 🔹 Token now valid for 1 year
         );
 
         res.json({ token, user: { id: user.rows[0].id, name: user.rows[0].name, email: user.rows[0].email } });
@@ -65,24 +65,17 @@ app.post('/login', async (req, res) => {
 const authenticate = (req, res, next) => {
     try {
         const authHeader = req.header('Authorization');
-        console.log("🔹 Received Authorization Header:", authHeader); // Debug log
-
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            console.error("❌ Access denied. No token provided.");
             return res.status(401).json({ error: "Access denied. No token provided." });
         }
 
         const token = authHeader.split(" ")[1]; // Extract JWT
-        console.log("🔍 Extracted Token:", token); // Debug log
-
         const verified = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("✅ Token Verified Successfully:", verified); // Debug log
-
-        req.user = verified; // Attach user data to request
+        req.user = verified;
         next();
     } catch (err) {
         console.error("❌ JWT Verification Error:", err.message);
-        res.status(400).json({ error: "Invalid token" });
+        res.status(400).json({ error: "Invalid or expired token" });
     }
 };
 
@@ -93,7 +86,7 @@ app.post('/moods', authenticate, async (req, res) => {
         const user_id = req.user.userId;
 
         await pool.query(
-            'INSERT INTO mood_logs (user_id, mood_score, note) VALUES ($1, $2, $3)',
+            'INSERT INTO mood_logs (user_id, mood_score, note, created_at) VALUES ($1, $2, $3, NOW())',
             [user_id, mood_score, note]
         );
         
@@ -108,7 +101,10 @@ app.post('/moods', authenticate, async (req, res) => {
 app.get('/moods', authenticate, async (req, res) => {
     try {
         const user_id = req.user.userId;
-        const moods = await pool.query('SELECT * FROM mood_logs WHERE user_id = $1', [user_id]);
+        const moods = await pool.query(
+            'SELECT * FROM mood_logs WHERE user_id = $1 ORDER BY created_at DESC', 
+            [user_id]
+        );
 
         res.json(moods.rows);
     } catch (err) {
@@ -117,13 +113,31 @@ app.get('/moods', authenticate, async (req, res) => {
     }
 });
 
+
 // 🔹 AI-Powered Mood Analysis (Gemini AI)
 app.post('/ai/analyze-mood', authenticate, async (req, res) => {
     try {
-        const { mood } = req.body;
+        const { mood_score, note } = req.body; // 🔹 Get both mood_score & note
         const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-        const result = await model.generateContent(`Suggest activities for someone feeling ${mood}`);
+        // 🔹 Stronger AI Prompt (Forces it to analyze the note)
+        const prompt = `
+        A user is feeling ${mood_score}/10 today.
+        They wrote the following note about their mood: "${note}". 
+
+        1️⃣ **Identify the key issue mentioned in the note.**  
+        2️⃣ **Based on that issue, suggest 3 activities that can improve their mood.**  
+        3️⃣ **Make sure the response directly addresses their concern.**  
+
+        Example:
+        - If the note mentions "I got low marks," suggest study strategies or stress relief tips.
+        - If the note mentions "I had a fight," suggest conflict resolution or emotional support ideas.
+        - If the note mentions "I'm exhausted," suggest rest-related activities.
+
+        Provide clear, actionable, and positive recommendations.
+        `;
+
+        const result = await model.generateContent(prompt);
         const text = result.response.candidates[0].content.parts[0].text;
 
         res.json({ suggestion: text });

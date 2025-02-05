@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../api/mood_api.dart';
 import '../widgets/mood_slider.dart';
 import '../widgets/mood_graph.dart';
@@ -25,6 +24,7 @@ class _MoodScreenState extends State<MoodScreen> {
     fetchMoodHistory();
   }
 
+  // 🔹 Fetch Mood History
   void fetchMoodHistory() async {
     setState(() => isLoading = true);
     final moods = await MoodAPI.getMoodHistory();
@@ -36,6 +36,7 @@ class _MoodScreenState extends State<MoodScreen> {
     });
   }
 
+  // 🔹 Log Mood Entry
   void logMood() async {
     if (isLogging) return;
     setState(() => isLogging = true);
@@ -45,21 +46,25 @@ class _MoodScreenState extends State<MoodScreen> {
 
     if (success) {
       fetchMoodHistory();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Mood logged successfully")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("✅ Mood logged successfully")),
+      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to log mood")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Failed to log mood")),
+      );
     }
   }
 
+  // 🔹 AI Mood Analysis (Now Uses Both Mood Score & User's Note)
   void getAISuggestion() async {
     if (isFetchingAI) return;
     setState(() => isFetchingAI = true);
 
-    final suggestion = await MoodAPI.analyzeMood(selectedMood.toString());
-
+    final suggestion = await MoodAPI.analyzeMood(selectedMood, noteController.text);
     setState(() {
       isFetchingAI = false;
-      aiSuggestion = suggestion ?? "Failed to get AI suggestion.";
+      aiSuggestion = suggestion ?? "❌ Failed to get AI suggestion.";
     });
   }
 
@@ -75,6 +80,7 @@ class _MoodScreenState extends State<MoodScreen> {
             children: [
               Text("How are you feeling today?", style: TextStyle(fontSize: 18)),
 
+              // 🔹 Mood Selector
               MoodSlider(
                 value: selectedMood.toDouble(),
                 onChanged: (value) {
@@ -84,14 +90,31 @@ class _MoodScreenState extends State<MoodScreen> {
                 },
               ),
 
-              TextField(controller: noteController, decoration: InputDecoration(labelText: "Notes")),
+              TextField(
+                controller: noteController,
+                decoration: InputDecoration(
+                  labelText: "Add a Note (Optional)",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
               SizedBox(height: 10),
 
-              ElevatedButton(onPressed: logMood, child: Text("Log Mood")),
+              // 🔹 Log Mood Button
+              ElevatedButton(
+                onPressed: isLogging ? null : logMood,
+                child: isLogging ? CircularProgressIndicator() : Text("Log Mood"),
+              ),
+
               SizedBox(height: 10),
 
-              ElevatedButton(onPressed: getAISuggestion, child: Text("Get AI Suggestion")),
+              // 🔹 Get AI Suggestion Button
+              ElevatedButton(
+                onPressed: isFetchingAI ? null : getAISuggestion,
+                child: isFetchingAI ? CircularProgressIndicator() : Text("Get AI Suggestion"),
+              ),
 
+              // 🔹 Display AI Suggestion
               AISuggestionWidget(aiSuggestion: aiSuggestion),
 
               SizedBox(height: 20),
@@ -99,7 +122,10 @@ class _MoodScreenState extends State<MoodScreen> {
               Text("Your Mood Trends", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 20),
 
-              isLoading ? CircularProgressIndicator() : MoodGraph(moodHistory: moodHistory),
+              // 🔹 Mood Tracking Graph 📊
+              isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : MoodGraph(moodHistory: moodHistory),
             ],
           ),
         ),
