@@ -1,31 +1,48 @@
 import 'package:flutter/material.dart';
 import '../api/auth_api.dart';
-import 'home_screen.dart';
-import 'signup_screen.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class SignupScreen extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _SignupScreenState createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
   bool isLoading = false;
 
-  void login() async {
+  void signup() async {
+    if (passwordController.text != confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Passwords do not match!")),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
-    final success = await AuthAPI.login(emailController.text, passwordController.text);
+
+    final success = await AuthAPI.signup(
+      nameController.text,
+      emailController.text,
+      passwordController.text,
+    );
+
     setState(() => isLoading = false);
 
-    if (success) {
+    if (success != null && success['token'] != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("✅ Account created successfully! Please login.")),
+      );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Invalid email or password. Please try again.")),
+        SnackBar(content: Text("❌ Signup failed. Please try again.")),
       );
     }
   }
@@ -47,10 +64,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Login",
+                    "Create Account",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -71,36 +98,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     obscureText: true,
                   ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: confirmPasswordController,
+                    decoration: InputDecoration(
+                      labelText: "Confirm Password",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    obscureText: true,
+                  ),
                   SizedBox(height: 20),
                   isLoading
                       ? CircularProgressIndicator()
                       : ElevatedButton(
-                          onPressed: login,
+                          onPressed: signup,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                             textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                          child: Text("Login"),
+                          child: Text("Sign Up"),
                         ),
-                  SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignupScreen()),
-                      );
-                    },
-                    child: Text(
-                      "Don't have an account? Sign up",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),

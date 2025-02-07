@@ -1,3 +1,4 @@
+import 'package:carezy/screens/signup_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -61,6 +62,7 @@ class CarezyApp extends StatelessWidget {
       initialRoute: token != null ? '/home' : '/login',
       routes: {
         '/login': (context) => LoginScreen(),
+        '/signup': (context) => SignupScreen(), // Added signup route
         '/home': (context) => HomeScreen(),
         '/tasks': (context) => TaskScreen(), // ✅ Added route for tasks
       },

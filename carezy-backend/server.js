@@ -20,18 +20,27 @@ app.get('/', (req, res) => {
 // 🔹 User Registration
 app.post('/register', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-            'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
-            [name, email, hashedPassword]
-        );
-        res.json(result.rows[0]);
+      const { name, email, password } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const result = await pool.query(
+        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
+        [name, email, hashedPassword]
+      );
+  
+      const token = jwt.sign(
+        { userId: result.rows[0].id, email: result.rows[0].email },
+        process.env.JWT_SECRET,
+        { expiresIn: '1y' }
+      );
+  
+      res.json({ token, user: result.rows[0] });
     } catch (err) {
-        console.error("❌ User Registration Error:", err);
-        res.status(500).json({ error: 'User registration failed' });
+      console.error("❌ User Registration Error:", err);
+      res.status(500).json({ error: 'User registration failed' });
     }
-});
+  });
+  
 
 // 🔹 User Login (JWT Valid for 1 Year)
 app.post('/login', async (req, res) => {

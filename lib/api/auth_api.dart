@@ -6,19 +6,29 @@ class AuthAPI {
   static const String baseUrl = "http://localhost:5000";
   static final storage = FlutterSecureStorage();
 
-  // 🔹 Signup function
-  static Future<Map<String, dynamic>?> register(String name, String email, String password) async {
+  // 🔹 User Signup
+  static Future<Map<String, dynamic>?> signup(
+      String name, String email, String password) async {
     final response = await http.post(
       Uri.parse("$baseUrl/register"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"name": name, "email": email, "password": password}),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "name": name,
+        "email": email,
+        "password": password,
+      }),
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      await storage.write(key: "token", value: data['token']);
+      return data;
     }
     return null;
   }
+
 
   // 🔹 Login function (Now clean)
   static Future<bool> login(String email, String password) async {
