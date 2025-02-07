@@ -76,4 +76,23 @@ class MoodAPI {
     }
     return null;
   }
+
+  static Future<Map<String, dynamic>?> getMusicSuggestion(String mood) async {
+    final token = await storage.read(key: "token");
+    if (token == null) return null;
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/music-recommendation"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json"
+      },
+      body: jsonEncode({"mood": mood}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    return null;
+  }
 }

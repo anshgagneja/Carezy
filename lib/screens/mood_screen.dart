@@ -3,6 +3,7 @@ import '../api/mood_api.dart';
 import '../widgets/mood_slider.dart';
 import '../widgets/mood_graph.dart';
 import '../widgets/ai_suggestion.dart';
+import 'music_screen.dart'; // ✅ Import Music Screen
 
 class MoodScreen extends StatefulWidget {
   @override
@@ -68,6 +69,16 @@ class _MoodScreenState extends State<MoodScreen> {
     });
   }
 
+  // 🔹 Navigate to Music Screen
+  void getMusicSuggestion() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MusicScreen(mood: selectedMood.toString()),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +101,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 },
               ),
 
+              // 🔹 User Note Input
               TextField(
                 controller: noteController,
                 decoration: InputDecoration(
@@ -100,18 +112,34 @@ class _MoodScreenState extends State<MoodScreen> {
 
               SizedBox(height: 10),
 
-              // 🔹 Log Mood Button
-              ElevatedButton(
-                onPressed: isLogging ? null : logMood,
-                child: isLogging ? CircularProgressIndicator() : Text("Log Mood"),
+              // 🔹 Buttons Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Log Mood Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isLogging ? null : logMood,
+                      child: isLogging ? CircularProgressIndicator() : Text("Log Mood"),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  // AI Suggestion Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isFetchingAI ? null : getAISuggestion,
+                      child: isFetchingAI ? CircularProgressIndicator() : Text("Get AI Suggestion"),
+                    ),
+                  ),
+                ],
               ),
 
               SizedBox(height: 10),
 
-              // 🔹 Get AI Suggestion Button
+              // 🔹 Music Suggestion Button
               ElevatedButton(
-                onPressed: isFetchingAI ? null : getAISuggestion,
-                child: isFetchingAI ? CircularProgressIndicator() : Text("Get AI Suggestion"),
+                onPressed: getMusicSuggestion,
+                child: Text("🎵 Get Mood-Based Music"),
               ),
 
               // 🔹 Display AI Suggestion

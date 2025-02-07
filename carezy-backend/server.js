@@ -216,3 +216,44 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
+
+const axios = require('axios');
+
+app.post('/music-recommendation', authenticate, async (req, res) => {
+    try {
+      const { mood } = req.body;
+  
+      // Your YouTube Data API Key
+      const apiKey = process.env.YOUTUBE_API_KEY;
+  
+      if (!apiKey) {
+        return res.status(500).json({ error: "YouTube API key is not configured" });
+      }
+  
+      // Search YouTube for videos matching the mood
+      const query = `best songs for ${mood} mood`;
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(
+        query
+      )}&key=${apiKey}&maxResults=1`;
+  
+      const response = await axios.get(url);
+  
+      if (response.data.items && response.data.items.length > 0) {
+        const video = response.data.items[0];
+        const result = {
+          title: video.snippet.title,
+          videoId: video.id.videoId,
+          thumbnail: video.snippet.thumbnails.medium.url,
+          hashtags: video.snippet.description || "",
+        };
+  
+        res.json(result);
+      } else {
+        res.status(404).json({ error: "No videos found" });
+      }
+    } catch (err) {
+      console.error("Error fetching music suggestion:", err.message);
+      res.status(500).json({ error: "Failed to fetch music suggestion" });
+    }
+  });
+  
