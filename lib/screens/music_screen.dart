@@ -21,22 +21,22 @@ class _MusicScreenState extends State<MusicScreen> {
   }
 
   void fetchMusic() async {
-  try {
-    final musicData = await MoodAPI.getMusicSuggestion(widget.mood);
-    print("Music API Response: $musicData"); // Log API response
-    setState(() {
-      song = musicData;
-      isLoading = false;
-    });
-  } catch (e) {
-    setState(() {
-      isLoading = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("❌ Error fetching music suggestion.")),
-    );
+    try {
+      final musicData = await MoodAPI.getMusicSuggestion(widget.mood);
+      print("Music API Response: $musicData"); // Log API response
+      setState(() {
+        song = musicData;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Error fetching music suggestion.")),
+      );
+    }
   }
-}
 
   void openYouTube() async {
     if (song != null && song!['videoId'] != null) {
@@ -60,12 +60,12 @@ class _MusicScreenState extends State<MusicScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Music for ${widget.mood} Mood"),
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.purple.shade800, Colors.purple.shade200],
+            colors: [Colors.deepPurpleAccent.shade100, Colors.deepPurple.shade600],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -76,55 +76,61 @@ class _MusicScreenState extends State<MusicScreen> {
               : song == null
                   ? Text(
                       "No music suggestions found.",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                     )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (song!['thumbnail'] != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              song!['thumbnail'],
-                              width: 250,
-                              errorBuilder: (context, error, stackTrace) => Icon(
-                                Icons.music_note,
-                                size: 100,
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (song!['thumbnail'] != null)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.network(
+                                  song!['thumbnail'],
+                                  width: 250,
+                                  errorBuilder: (context, error, stackTrace) => Icon(
+                                    Icons.music_note,
+                                    size: 100,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            SizedBox(height: 20),
+                            Text(
+                              song!['title'] ?? "No Title Available",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                          ),
-                        SizedBox(height: 20),
-                        Text(
-                          song!['title'] ?? "No Title Available",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          song!['hashtags'] ?? "",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: Colors.white70),
-                        ),
-                        SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: openYouTube,
-                          icon: Icon(Icons.play_arrow, color: Colors.white),
-                          label: Text("Play on YouTube"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                            SizedBox(height: 10),
+                            Text(
+                              song!['hashtags'] ?? "",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: Colors.white70),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                          ),
+                            SizedBox(height: 20),
+                            ElevatedButton.icon(
+                              onPressed: openYouTube,
+                              icon: Icon(Icons.play_arrow, color: Colors.white),
+                              label: Text("Play on YouTube"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
         ),
       ),
