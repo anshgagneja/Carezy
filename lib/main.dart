@@ -1,3 +1,4 @@
+import 'package:carezy/screens/chat_bot_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -69,6 +70,7 @@ class CarezyApp extends StatelessWidget {
         '/signup': (context) => SignupScreen(), // Route for Signup
         '/home': (context) => HomeScreen(),
         '/tasks': (context) => TaskScreen(), // Route for Tasks
+        '/chatbot': (context) => ChatBotScreen(),
       },
     );
   }

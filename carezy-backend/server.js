@@ -265,4 +265,33 @@ app.post('/music-recommendation', authenticate, async (req, res) => {
       res.status(500).json({ error: "Failed to fetch music suggestion" });
     }
   });
-  
+  let conversationHistories = {}; // Store conversation history per user
+
+app.post('/chatbot', authenticate, async (req, res) => {
+  try {
+    const { query } = req.body;
+    const userId = req.user.userId;
+
+    if (!conversationHistories[userId]) {
+      conversationHistories[userId] = [];
+    }
+
+    conversationHistories[userId].push({ role: "user", content: query });
+
+    const prompt = conversationHistories[userId]
+      .map((entry) => `${entry.role}: ${entry.content}`)
+      .join("\n");
+
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+
+    const botResponse = result.response.candidates[0].content.parts[0].text;
+
+    conversationHistories[userId].push({ role: "bot", content: botResponse });
+
+    res.json({ response: botResponse });
+  } catch (error) {
+    console.error("❌ Chatbot Error:", error.message);
+    res.status(500).json({ error: 'Failed to generate chatbot response' });
+  }
+});

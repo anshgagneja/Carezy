@@ -1,0 +1,43 @@
+[
+  {
+    "id": 1,
+    "question": "How are you feeling today?",
+    "next": {
+      "happy": 2,
+      "sad": 3,
+      "neutral": 4
+    }
+  },
+  {
+    "id": 2,
+    "question": "What made you happy today?",
+    "next": {
+      "default": 5
+    }
+  },
+  {
+    "id": 3,
+    "question": "What is making you feel sad?",
+    "next": {
+      "default": 5
+    }
+  },
+  {
+    "id": 4,
+    "question": "Would you like to share more about how you're feeling?",
+    "next": {
+      "yes": 5,
+      "no": 6
+    }
+  },
+  {
+    "id": 5,
+    "question": "What can I do to assist you further?",
+    "end": true
+  },
+  {
+    "id": 6,
+    "question": "Thank you for sharing! Have a great day!",
+    "end": true
+  }
+]

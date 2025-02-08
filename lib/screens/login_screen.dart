@@ -15,8 +15,19 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   void login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      // Show an error if fields are empty
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Please enter both email and password.")),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
-    final success = await AuthAPI.login(emailController.text, passwordController.text);
+    final success = await AuthAPI.login(email, password);
     setState(() => isLoading = false);
 
     if (success) {
