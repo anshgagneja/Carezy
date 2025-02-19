@@ -1,14 +1,93 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'mood_screen.dart';
-import 'task_screen.dart';
-import 'chat_bot_screen.dart';
-import '../api/auth_api.dart';
+import 'package:carezy/screens/mood_screen.dart';
+import 'package:carezy/screens/task_screen.dart';
+import 'package:carezy/screens/chat_bot_screen.dart';
+import 'package:carezy/screens/profile_screen.dart';
+import '../api/mood_api.dart';
+import 'package:carezy/widgets/mood_graph.dart';
+import 'package:carezy/widgets/quick_tasks.dart';
 
-class HomeScreen extends StatelessWidget {
-  void logout(BuildContext context) async {
-    await AuthAPI.logout();
-    Navigator.pushReplacementNamed(context, '/login');
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    HomeContent(),
+    MoodScreen(),
+    TaskScreen(),
+    ChatBotScreen(), // Carezy Companion
+    ProfileScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black, // 🔹 Ensures full black background
+      child: Scaffold(
+        backgroundColor: Colors.black, // 🔹 Matches background with navbar
+        body: _screens[_selectedIndex],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            color: Colors.black, // 🔹 Matches screen background
+          ),
+          clipBehavior: Clip.hardEdge, // 🔹 Prevents white leaks at rounded corners
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            backgroundColor: Colors.black, // 🔹 Matches background
+            selectedItemColor: Colors.deepPurpleAccent,
+            unselectedItemColor: Colors.white60,
+            elevation: 0, // 🔹 No extra shadows
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.emoji_emotions), label: 'Mood'),
+              BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
+              BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Carezy Companion'),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 🔹 Main Home Content
+class HomeContent extends StatefulWidget {
+  @override
+  _HomeContentState createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  List<dynamic> moodHistory = [];
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMoodHistory();
+  }
+
+  void fetchMoodHistory() async {
+    setState(() => isLoading = true);
+    final moods = await MoodAPI.getMoodHistory();
+    setState(() {
+      isLoading = false;
+      moodHistory = moods ?? [];
+    });
   }
 
   String _getGreetingMessage() {
@@ -24,252 +103,144 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: _buildDrawer(context),
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple.shade900, Colors.deepPurple.shade500],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Column(
-            children: [
-              // ✅ APP BAR (WITH MENU & LOGOUT)
-              _buildAppBar(context),
-              SizedBox(height: 15),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.black, Colors.black87],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 50),
 
-              // ✅ GREETING & QUOTE SECTION
-              _buildGreetingCard(),
-
-              SizedBox(height: 20),
-
-              // ✅ FEATURE CARDS - STACKED VIEW
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+            // 🔹 Greeting Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFeatureCard(
-                      context,
-                      title: "Mood & Wellness",
-                      icon: Icons.self_improvement_rounded,
-                      subtitle: "Track your emotions & improve well-being",
-                      image: "assets/images/mood.png",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => MoodScreen()),
-                      ),
+                    Text(
+                      _getGreetingMessage(),
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: "Task Management",
-                      icon: Icons.task_alt_rounded,
-                      subtitle: "Stay organized with daily tasks",
-                      image: "assets/images/tasks.png",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => TaskScreen()),
-                      ),
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      title: "Carezy Assistant",
-                      icon: Icons.chat_bubble_outline_rounded,
-                      subtitle: "Your personal AI chat companion",
-                      image: "assets/images/chatbot.png",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ChatBotScreen()),
-                      ),
+                    Text(
+                      "Stay mindful & track your journey 🌿",
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatBotScreen()),
-          );
-        },
-        backgroundColor: Colors.deepPurpleAccent,
-        child: Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 30),
-        tooltip: "Carezy Assistant",
-      ),
-    );
-  }
-
-  // ✅ APP BAR WITH MENU & LOGOUT
-  Widget _buildAppBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.menu, color: Colors.white),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: () => logout(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ✅ GREETING CARD (WITH QUOTE)
-  Widget _buildGreetingCard() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.deepPurpleAccent.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white24, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _getGreetingMessage(),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "“Your mental well-being is just as important as your physical health.”",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ✅ FEATURE CARDS WITH IMAGE & ICON
-  Widget _buildFeatureCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required String image,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16),
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white24, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 6,
-              offset: Offset(2, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                image,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(icon, size: 28, color: Colors.white70),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ✅ DRAWER MENU
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: Container(
-        color: Colors.deepPurple,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.deepPurple, Colors.purpleAccent],
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage("assets/images/profile_placeholder.png"),
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  'Carezy Menu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ],
+            ),
+
+            SizedBox(height: 20),
+
+            // 🔥 Track Your Mood
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => MoodScreen()));
+              },
+              child: Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade900,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.deepPurpleAccent, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.deepPurpleAccent.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: Offset(2, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.bar_chart_rounded, size: 30, color: Colors.deepPurpleAccent),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Track Your Mood",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                          Text(
+                            "Log how you feel & monitor trends",
+                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white70),
+                  ],
                 ),
               ),
             ),
-            ListTile(
-              leading: Icon(Icons.home, color: Colors.white),
-              title: Text('Home', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pushNamed(context, '/home'),
+
+            SizedBox(height: 20),
+
+            // 🔥 Carezy Companion
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ChatBotScreen()));
+              },
+              child: Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.smart_toy, size: 40, color: Colors.white),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Carezy Companion",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                          Text(
+                            "Daily Check-ins & AI chat support",
+                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white70),
+                  ],
+                ),
+              ),
             ),
-            ListTile(
-              leading: Icon(Icons.task, color: Colors.white),
-              title: Text('Tasks', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pushNamed(context, '/tasks'),
-            ),
-            ListTile(
-              leading: Icon(Icons.logout, color: Colors.white),
-              title: Text('Logout', style: TextStyle(color: Colors.white)),
-              onTap: () => logout(context),
-            ),
+
+            SizedBox(height: 20),
+
+            // 🔹 Mood Graph
+            Text("Your Mood Trends", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            SizedBox(height: 10),
+            isLoading ? Center(child: CircularProgressIndicator(color: Colors.white)) : MoodGraph(moodHistory: moodHistory),
+
+            SizedBox(height: 20),
+
+            // 🔹 Quick Tasks (Only Pending Tasks)
+            Text("Upcoming Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            SizedBox(height: 10),
+            QuickTasks(showCompleted: false), // ✅ Only Pending Tasks
+
+            SizedBox(height: 30),
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart'; // For animations
 import '../api/task_api.dart';
 
 class TaskScreen extends StatefulWidget {
@@ -47,19 +48,23 @@ class _TaskScreenState extends State<TaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black, // Dark Theme
       appBar: AppBar(
-        title: Text("Task Manager", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.deepPurple,
+        title: Text(
+          "Task Manager",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: Colors.black.withOpacity(0.9),
         centerTitle: true,
         elevation: 5,
       ),
       body: Stack(
         children: [
-          // 🔹 Gradient Background
+          // 🔹 Background Gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.deepPurple.shade300, Colors.deepPurple.shade100],
+                colors: [Colors.black87, Colors.black],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -85,9 +90,9 @@ class _TaskScreenState extends State<TaskScreen> {
                 // 🔹 Glassmorphic Add Task Card
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withOpacity(0.07), // Glass Effect
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
                   ),
                   padding: EdgeInsets.all(16),
                   child: Column(
@@ -97,9 +102,9 @@ class _TaskScreenState extends State<TaskScreen> {
                         controller: titleController,
                         decoration: InputDecoration(
                           labelText: "Task Title",
-                          prefixIcon: Icon(Icons.title, color: Colors.white),
+                          prefixIcon: Icon(Icons.title, color: Colors.white70),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.2),
+                          fillColor: Colors.white.withOpacity(0.07),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -115,9 +120,9 @@ class _TaskScreenState extends State<TaskScreen> {
                         controller: descriptionController,
                         decoration: InputDecoration(
                           labelText: "Task Description",
-                          prefixIcon: Icon(Icons.description, color: Colors.white),
+                          prefixIcon: Icon(Icons.description, color: Colors.white70),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.2),
+                          fillColor: Colors.white.withOpacity(0.07),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -128,11 +133,11 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                       SizedBox(height: 15),
 
-                      // Add Task Button
+                      // Add Task Button (Gradient)
                       ElevatedButton.icon(
                         onPressed: addTask,
                         icon: Icon(Icons.add, color: Colors.white),
-                        label: Text("Add Task"),
+                        label: Text("Add Task", style: TextStyle(fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purpleAccent,
                           foregroundColor: Colors.white,
@@ -150,14 +155,19 @@ class _TaskScreenState extends State<TaskScreen> {
                 // 🔹 Task List Section
                 Expanded(
                   child: isLoading
-                      ? Center(child: CircularProgressIndicator())
+                      ? Center(child: CircularProgressIndicator(color: Colors.white))
                       : tasks.isEmpty
-                          ? Center(
-                              child: Text(
-                                "No tasks yet! Add a new task to get started.",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                                textAlign: TextAlign.center,
-                              ),
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Lottie.asset('assets/animations/empty_tasks.json', width: 200),
+                                SizedBox(height: 10),
+                                Text(
+                                  "No tasks yet! Add a new task to get started.",
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             )
                           : ListView.builder(
                               itemCount: tasks.length,
@@ -169,7 +179,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
                                   ),
-                                  color: Colors.white.withOpacity(0.2), // Glassmorphic card
+                                  color: Colors.white.withOpacity(0.07), // Glassmorphic Effect
                                   child: ListTile(
                                     contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                                     leading: CircleAvatar(

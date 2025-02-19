@@ -3,13 +3,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TaskAPI {
-  static const String baseUrl = "http://10.50.2.180:5000";
+  static const String baseUrl = "http://10.86.2.237:5000";
   static final storage = FlutterSecureStorage();
 
   // 🔹 Fetch All Tasks
-  static Future<List<dynamic>?> getTasks() async {
+  static Future<List<dynamic>> getTasks() async {
     final token = await storage.read(key: "token");
-    if (token == null) return null;
+    if (token == null) return []; // ✅ Return an empty list instead of null
 
     final response = await http.get(
       Uri.parse("$baseUrl/tasks"),
@@ -20,9 +20,10 @@ class TaskAPI {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final List<dynamic> tasks = jsonDecode(response.body);
+      return tasks ?? []; // ✅ Ensuring non-null return
     }
-    return null;
+    return []; // ✅ Fallback to empty list if request fails
   }
 
   // 🔹 Add a New Task

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart'; // For animations
+import 'package:lottie/lottie.dart';
 import '../api/mood_api.dart';
 import '../widgets/mood_slider.dart';
 import '../widgets/mood_graph.dart';
@@ -31,9 +31,7 @@ class _MoodScreenState extends State<MoodScreen> {
     final moods = await MoodAPI.getMoodHistory();
     setState(() {
       isLoading = false;
-      if (moods != null) {
-        moodHistory = moods;
-      }
+      moodHistory = moods ?? [];
     });
   }
 
@@ -80,19 +78,22 @@ class _MoodScreenState extends State<MoodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black, // 🔥 Full Dark Theme
       appBar: AppBar(
-        title: Text("Mood Tracking",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          "Mood Tracking",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         centerTitle: true,
         elevation: 5,
-        backgroundColor: Colors.deepPurple.shade900,
+        backgroundColor: Colors.black.withOpacity(0.9),
       ),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.deepPurple.shade900, Colors.deepPurple.shade500],
+              colors: [Colors.black, Colors.black87],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -100,12 +101,12 @@ class _MoodScreenState extends State<MoodScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔹 Mood Animation
+              // 🔹 Mood Animation (Minimal)
               Center(
                 child: Lottie.asset(
                   'assets/animations/mood_animation.json',
-                  width: 150,
-                  height: 150,
+                  width: 120,
+                  height: 120,
                 ),
               ),
               SizedBox(height: 20),
@@ -131,50 +132,42 @@ class _MoodScreenState extends State<MoodScreen> {
                 },
               ),
 
-              // 🔹 Note Input
-              // 🔹 Note Input Field (Fixed)
+              // 🔹 Note Input (FIXED: No White Background)
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple
-                      .shade50, // Light purple background for better visibility
+                  color: Colors.grey.shade800.withOpacity(0.6), // Dark, Blended with Background
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: Colors.deepPurple.shade300), // Adds visibility
+                  border: Border.all(color: Colors.white24),
                 ),
                 child: TextField(
                   controller: noteController,
-                  style: TextStyle(
-                      color:
-                          Colors.black), // Ensuring black text for readability
+                  style: TextStyle(color: Colors.black), // ✅ White Text
                   decoration: InputDecoration(
-                    labelText: "Add a Note (Optional)",
-                    labelStyle:
-                        TextStyle(color: Colors.deepPurple), // Matches theme
+                    labelText: "Add a Note", // ✅ No "(Optional)"
+                    labelStyle: TextStyle(color: Colors.deepPurpleAccent),
                     border: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    prefixIcon: Icon(Icons.note, color: Colors.deepPurple),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    prefixIcon: Icon(Icons.edit, color: const Color.fromARGB(179, 121, 152, 255)),
                   ),
                 ),
               ),
 
               SizedBox(height: 20),
 
-              // 🔹 Action Buttons
+              // 🔹 Action Buttons (Gradient Buttons)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: isLogging ? null : logMood,
-                      icon: Icon(Icons.add_circle_outline, size: 20),
-                      label: isLogging
+                      child: isLogging
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text("Log Mood"),
+                          : Text("Log Mood", style: TextStyle(fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurpleAccent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 15),
                       ),
@@ -182,16 +175,15 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: isFetchingAI ? null : getAISuggestion,
-                      icon: Icon(Icons.lightbulb, size: 20),
-                      label: isFetchingAI
+                      child: isFetchingAI
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text("Get AI Suggestion"),
+                          : Text("Get AI Suggestion", style: TextStyle(fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purpleAccent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 15),
                       ),
@@ -202,26 +194,24 @@ class _MoodScreenState extends State<MoodScreen> {
 
               SizedBox(height: 20),
 
-              // 🔹 Fixed Music Suggestion Button (Removed Extra Icon)
+              // 🔹 Music Suggestion Button (Sleek Glass Effect)
               ElevatedButton(
                 onPressed: getMusicSuggestion,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
+                  backgroundColor: Colors.white.withOpacity(0.1),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 15),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.music_note,
-                        size: 20, color: Colors.white), // Single icon
-                    SizedBox(width: 8), // Space between icon and text
+                    Icon(Icons.music_note, size: 20, color: Colors.tealAccent),
+                    SizedBox(width: 8),
                     Text(
                       "Get Mood-Based Music",
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -229,10 +219,17 @@ class _MoodScreenState extends State<MoodScreen> {
 
               SizedBox(height: 20),
 
-              // 🔹 AI Suggestion
-              aiSuggestion.isNotEmpty
-                  ? AISuggestionWidget(aiSuggestion: aiSuggestion)
-                  : Container(),
+              // 🔹 AI Suggestion (Glassmorphism)
+              if (aiSuggestion.isNotEmpty)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.07),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  padding: EdgeInsets.all(16),
+                  child: AISuggestionWidget(aiSuggestion: aiSuggestion),
+                ),
 
               SizedBox(height: 30),
 
@@ -247,11 +244,18 @@ class _MoodScreenState extends State<MoodScreen> {
               ),
               SizedBox(height: 10),
 
-              // 🔹 Mood Graph
-              isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(color: Colors.white))
-                  : MoodGraph(moodHistory: moodHistory),
+              // 🔹 Mood Graph (Blurred Background)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white24),
+                ),
+                padding: EdgeInsets.all(12),
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator(color: Colors.white))
+                    : MoodGraph(moodHistory: moodHistory),
+              ),
             ],
           ),
         ),
