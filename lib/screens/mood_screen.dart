@@ -60,7 +60,8 @@ class _MoodScreenState extends State<MoodScreen> {
     if (isFetchingAI) return;
     setState(() => isFetchingAI = true);
 
-    final suggestion = await MoodAPI.analyzeMood(selectedMood, noteController.text);
+    final suggestion =
+        await MoodAPI.analyzeMood(selectedMood, noteController.text);
     setState(() {
       isFetchingAI = false;
       aiSuggestion = suggestion ?? "❌ Failed to get AI suggestion.";
@@ -80,17 +81,18 @@ class _MoodScreenState extends State<MoodScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mood Tracking", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text("Mood Tracking",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 5,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.deepPurple.shade900,
       ),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.deepPurple.shade100, Colors.deepPurple.shade50],
+              colors: [Colors.deepPurple.shade900, Colors.deepPurple.shade500],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -98,28 +100,28 @@ class _MoodScreenState extends State<MoodScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Mood Animation
+              // 🔹 Mood Animation
               Center(
                 child: Lottie.asset(
-                  'assets/animations/mood_animation.json', // Add a mood-based Lottie animation here
+                  'assets/animations/mood_animation.json',
                   width: 150,
                   height: 150,
                 ),
               ),
               SizedBox(height: 20),
 
-              // Title
+              // 🔹 Title
               Text(
                 "How are you feeling today?",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+                  color: Colors.white,
                 ),
               ),
               SizedBox(height: 10),
 
-              // Mood Slider
+              // 🔹 Mood Slider
               MoodSlider(
                 value: selectedMood.toDouble(),
                 onChanged: (value) {
@@ -129,18 +131,36 @@ class _MoodScreenState extends State<MoodScreen> {
                 },
               ),
 
-              // Note Input
-              TextField(
-                controller: noteController,
-                decoration: InputDecoration(
-                  labelText: "Add a Note (Optional)",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note, color: Colors.deepPurple),
+              // 🔹 Note Input
+              // 🔹 Note Input Field (Fixed)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple
+                      .shade50, // Light purple background for better visibility
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: Colors.deepPurple.shade300), // Adds visibility
+                ),
+                child: TextField(
+                  controller: noteController,
+                  style: TextStyle(
+                      color:
+                          Colors.black), // Ensuring black text for readability
+                  decoration: InputDecoration(
+                    labelText: "Add a Note (Optional)",
+                    labelStyle:
+                        TextStyle(color: Colors.deepPurple), // Matches theme
+                    border: InputBorder.none,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    prefixIcon: Icon(Icons.note, color: Colors.deepPurple),
+                  ),
                 ),
               ),
+
               SizedBox(height: 20),
 
-              // Action Buttons
+              // 🔹 Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -152,7 +172,7 @@ class _MoodScreenState extends State<MoodScreen> {
                           ? CircularProgressIndicator(color: Colors.white)
                           : Text("Log Mood"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
+                        backgroundColor: Colors.deepPurpleAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -182,11 +202,9 @@ class _MoodScreenState extends State<MoodScreen> {
 
               SizedBox(height: 20),
 
-              // Music Suggestion Button
-              ElevatedButton.icon(
+              // 🔹 Fixed Music Suggestion Button (Removed Extra Icon)
+              ElevatedButton(
                 onPressed: getMusicSuggestion,
-                icon: Icon(Icons.music_note, size: 20),
-                label: Text("🎵 Get Mood-Based Music"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   shape: RoundedRectangleBorder(
@@ -194,31 +212,45 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                   padding: EdgeInsets.symmetric(vertical: 15),
                 ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.music_note,
+                        size: 20, color: Colors.white), // Single icon
+                    SizedBox(width: 8), // Space between icon and text
+                    Text(
+                      "Get Mood-Based Music",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
               ),
 
               SizedBox(height: 20),
 
-              // AI Suggestion
+              // 🔹 AI Suggestion
               aiSuggestion.isNotEmpty
                   ? AISuggestionWidget(aiSuggestion: aiSuggestion)
                   : Container(),
 
               SizedBox(height: 30),
 
-              // Mood Trends Header
+              // 🔹 Mood Trends Header
               Text(
                 "Your Mood Trends",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+                  color: Colors.white,
                 ),
               ),
               SizedBox(height: 10),
 
-              // Mood Graph
+              // 🔹 Mood Graph
               isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: CircularProgressIndicator(color: Colors.white))
                   : MoodGraph(moodHistory: moodHistory),
             ],
           ),

@@ -79,6 +79,9 @@ flutter:
     - assets/animations/login.json
     - assets/questions.json
     - assets/images/hero_image.png
+    - assets/images/tasks.png
+    - assets/images/mood.png
+    - assets/images/chatbot.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

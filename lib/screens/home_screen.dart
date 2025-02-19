@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For greeting based on time
+import 'package:intl/intl.dart';
 import 'mood_screen.dart';
 import 'task_screen.dart';
 import 'chat_bot_screen.dart';
@@ -14,11 +14,11 @@ class HomeScreen extends StatelessWidget {
   String _getGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return "Good Morning!";
+      return "Good Morning! ☀️";
     } else if (hour < 17) {
-      return "Good Afternoon!";
+      return "Good Afternoon! 🌤️";
     } else {
-      return "Good Evening!";
+      return "Good Evening! 🌙";
     }
   }
 
@@ -30,50 +30,64 @@ class HomeScreen extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.deepPurple.shade100, Colors.deepPurple.shade50],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              colors: [Colors.deepPurple.shade900, Colors.deepPurple.shade500],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // AppBar Section
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.menu, color: Colors.deepPurple),
-                              onPressed: () {
-                                Scaffold.of(context).openDrawer();
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.logout, color: Colors.deepPurple),
-                              onPressed: () => logout(context),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        // Hero Section
-                        _buildHeroSection(context),
-                        SizedBox(height: 20),
-                        // Feature Widgets
-                        _buildFeatureWidgets(context),
-                        SizedBox(height: 30),
-                      ],
+          child: Column(
+            children: [
+              // ✅ APP BAR (WITH MENU & LOGOUT)
+              _buildAppBar(context),
+              SizedBox(height: 15),
+
+              // ✅ GREETING & QUOTE SECTION
+              _buildGreetingCard(),
+
+              SizedBox(height: 20),
+
+              // ✅ FEATURE CARDS - STACKED VIEW
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    _buildFeatureCard(
+                      context,
+                      title: "Mood & Wellness",
+                      icon: Icons.self_improvement_rounded,
+                      subtitle: "Track your emotions & improve well-being",
+                      image: "assets/images/mood.png",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MoodScreen()),
+                      ),
                     ),
-                  ),
+                    _buildFeatureCard(
+                      context,
+                      title: "Task Management",
+                      icon: Icons.task_alt_rounded,
+                      subtitle: "Stay organized with daily tasks",
+                      image: "assets/images/tasks.png",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TaskScreen()),
+                      ),
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      title: "Carezy Assistant",
+                      icon: Icons.chat_bubble_outline_rounded,
+                      subtitle: "Your personal AI chat companion",
+                      image: "assets/images/chatbot.png",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ChatBotScreen()),
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ),
       ),
@@ -84,13 +98,139 @@ class HomeScreen extends StatelessWidget {
             MaterialPageRoute(builder: (context) => ChatBotScreen()),
           );
         },
-        backgroundColor: Colors.deepPurple,
-        child: Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 28),
+        backgroundColor: Colors.deepPurpleAccent,
+        child: Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 30),
         tooltip: "Carezy Assistant",
       ),
     );
   }
 
+  // ✅ APP BAR WITH MENU & LOGOUT
+  Widget _buildAppBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
+            onPressed: () => logout(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ GREETING CARD (WITH QUOTE)
+  Widget _buildGreetingCard() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.deepPurpleAccent.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white24, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _getGreetingMessage(),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "“Your mental well-being is just as important as your physical health.”",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ FEATURE CARDS WITH IMAGE & ICON
+  Widget _buildFeatureCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String image,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16),
+        padding: EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white24, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 6,
+              offset: Offset(2, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.asset(
+                image,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
+            SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(icon, size: 28, color: Colors.white70),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ✅ DRAWER MENU
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: Container(
@@ -132,133 +272,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeroSection(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.deepPurple, Colors.purpleAccent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(2, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getGreetingMessage(),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Let's make today great for your mental health.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.asset(
-              'assets/images/hero_image.png',
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureWidgets(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildFeatureWidget(
-          context,
-          title: "Mood & Wellness",
-          icon: Icons.self_improvement_rounded,
-          color: Colors.purpleAccent,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MoodScreen()),
-          ),
-        ),
-        _buildFeatureWidget(
-          context,
-          title: "Task Management",
-          icon: Icons.task_alt_rounded,
-          color: Colors.teal,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => TaskScreen()),
-          ),
-        ),
-        _buildFeatureWidget(
-          context,
-          title: "Carezy Assistant",
-          icon: Icons.chat_bubble_outline_rounded,
-          color: Colors.orangeAccent,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatBotScreen()),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeatureWidget(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 50, // Increased radius for larger icons
-            backgroundColor: color.withOpacity(0.2),
-            child: Icon(icon, size: 50, color: color), // Increased icon size
-          ),
-          SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16, // Slightly increased font size for better readability
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ),
     );
   }

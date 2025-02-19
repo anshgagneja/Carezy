@@ -48,16 +48,18 @@ class _TaskScreenState extends State<TaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Task Management"),
-        backgroundColor: Colors.teal,
+        title: Text("Task Manager", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.deepPurple,
+        centerTitle: true,
+        elevation: 5,
       ),
       body: Stack(
         children: [
-          // Gradient Background
+          // 🔹 Gradient Background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.teal.shade100, Colors.teal.shade50],
+                colors: [Colors.deepPurple.shade300, Colors.deepPurple.shade100],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -67,106 +69,140 @@ class _TaskScreenState extends State<TaskScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Add Task Card
-                Card(
-                  elevation: 10,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                // 🔹 Header
+                Text(
+                  "Your Tasks 📋",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  color: Colors.white, // Light background inside the card
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: titleController,
-                          decoration: InputDecoration(
-                            labelText: "Task Title",
-                            prefixIcon: Icon(Icons.title, color: Colors.teal.shade700),
-                            filled: true,
-                            fillColor: Colors.teal.shade50,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
+                ),
+                SizedBox(height: 10),
+
+                // 🔹 Glassmorphic Add Task Card
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Task Title Input
+                      TextField(
+                        controller: titleController,
+                        decoration: InputDecoration(
+                          labelText: "Task Title",
+                          prefixIcon: Icon(Icons.title, color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.2),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          labelStyle: TextStyle(color: Colors.white),
+                        ),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      SizedBox(height: 10),
+
+                      // Task Description Input
+                      TextField(
+                        controller: descriptionController,
+                        decoration: InputDecoration(
+                          labelText: "Task Description",
+                          prefixIcon: Icon(Icons.description, color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.2),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          labelStyle: TextStyle(color: Colors.white),
+                        ),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      SizedBox(height: 15),
+
+                      // Add Task Button
+                      ElevatedButton.icon(
+                        onPressed: addTask,
+                        icon: Icon(Icons.add, color: Colors.white),
+                        label: Text("Add Task"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purpleAccent,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        SizedBox(height: 10),
-                        TextField(
-                          controller: descriptionController,
-                          decoration: InputDecoration(
-                            labelText: "Description",
-                            prefixIcon: Icon(Icons.description, color: Colors.teal.shade700),
-                            filled: true,
-                            fillColor: Colors.teal.shade50,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: addTask,
-                          child: Text("Add Task"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal.shade700,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 20),
 
-                // Task List
+                // 🔹 Task List Section
                 Expanded(
                   child: isLoading
                       ? Center(child: CircularProgressIndicator())
-                      : ListView.builder(
-                          itemCount: tasks.length,
-                          itemBuilder: (context, index) {
-                            final task = tasks[index];
-                            return Card(
-                              elevation: 4,
-                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
+                      : tasks.isEmpty
+                          ? Center(
+                              child: Text(
+                                "No tasks yet! Add a new task to get started.",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                                textAlign: TextAlign.center,
                               ),
-                              color: Colors.white, // Light background inside the task card
-                              child: ListTile(
-                                title: Text(
-                                  task['title'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                            )
+                          : ListView.builder(
+                              itemCount: tasks.length,
+                              itemBuilder: (context, index) {
+                                final task = tasks[index];
+                                return Card(
+                                  elevation: 5,
+                                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  task['description'] ?? "No Description",
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                                trailing: task['status'] == "completed"
-                                    ? Icon(Icons.check_circle, color: Colors.green)
-                                    : ElevatedButton(
-                                        onPressed: () => completeTask(task['task_id']),
-                                        child: Text("Complete"),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.teal.shade700,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                onLongPress: () => deleteTask(task['task_id']),
-                              ),
-                            );
-                          },
-                        ),
+                                  color: Colors.white.withOpacity(0.2), // Glassmorphic card
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.deepPurple.shade100,
+                                      child: Icon(Icons.task_alt, color: Colors.deepPurple.shade700),
+                                    ),
+                                    title: Text(
+                                      task['title'],
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                    ),
+                                    subtitle: Text(
+                                      task['description'] ?? "No Description",
+                                      style: TextStyle(color: Colors.white70),
+                                    ),
+                                    trailing: task['status'] == "completed"
+                                        ? Icon(Icons.check_circle, color: Colors.green, size: 28)
+                                        : ElevatedButton(
+                                            onPressed: () => completeTask(task['task_id']),
+                                            child: Text("Complete"),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.purpleAccent,
+                                              foregroundColor: Colors.white,
+                                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                    onLongPress: () => deleteTask(task['task_id']),
+                                  ),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),

@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MoodAPI {
-  static const String baseUrl = "http://localhost:5000";
+  static const String baseUrl = "http://10.50.2.180:5000";
+
   static final storage = FlutterSecureStorage();
 
   // 🔹 Fetch Mood History (Uses `created_at` Instead of `timestamp`)
