@@ -78,7 +78,7 @@ flutter:
     - assets/animations/mood_animation.json
     - assets/animations/signup.json
     - assets/animations/login.json
-    - assets/animations/welcome.json
+    - assets/animations/bot.json
     - assets/questions.json
     - assets/images/hero_image.png
     - assets/images/tasks.png
