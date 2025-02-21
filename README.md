@@ -54,7 +54,7 @@ Carezy is a mental health app designed to provide users with a seamless and enga
    ```
 
 ## Contributing
-We welcome contributions! Feel free to fork the repo and submit pull requests.
+I welcome contributions! Feel free to fork the repo and submit pull requests.
 
 ## License
 This project is licensed under the MIT License.
