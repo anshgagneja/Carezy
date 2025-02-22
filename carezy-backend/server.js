@@ -10,6 +10,7 @@ const path = require('path');
 const axios = require('axios');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -389,5 +390,77 @@ app.post('/chatbot', authenticate, async (req, res) => {
   } catch (error) {
     console.error("❌ Chatbot Error:", error.message);
     res.status(500).json({ error: 'Failed to generate chatbot response' });
+  }
+});
+const nodemailer = require("nodemailer"); // ✅ Add Nodemailer for email
+
+const otpStorage = {}; // Temporary OTP storage (Consider Redis in production)
+
+// ✅ Setup Email Transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// ✅ 1️⃣ Send OTP for Password Reset
+app.post("/send-reset-otp", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const userQuery = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
+
+    if (userQuery.rows.length === 0) {
+      return res.status(400).json({ error: "❌ User not found" });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStorage[email] = { otp, expiresAt: Date.now() + 300000 }; // OTP valid for 5 mins
+
+    // Send OTP via Email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Carezy Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}. It is valid for 5 minutes.`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("❌ Email Error:", error);
+        return res.status(500).json({ error: "Error sending OTP email" });
+      }
+      res.json({ message: "✅ OTP sent successfully!" });
+    });
+  } catch (err) {
+    console.error("❌ Database Error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// ✅ 2️⃣ Verify OTP & Reset Password
+app.post("/reset-password", async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    if (!otpStorage[email] || otpStorage[email].otp !== otp) {
+      return res.status(400).json({ error: "❌ Invalid or expired OTP" });
+    }
+
+    delete otpStorage[email]; // Remove OTP after verification
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password in PostgreSQL
+    await pool.query("UPDATE users SET password_hash = $1 WHERE email = $2", [hashedPassword, email]);
+
+    res.json({ message: "✅ Password reset successfully!" });
+  } catch (err) {
+    console.error("❌ Database Error:", err);
+    res.status(500).json({ error: "Database error" });
   }
 });

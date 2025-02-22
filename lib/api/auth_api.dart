@@ -40,30 +40,30 @@ class AuthAPI {
 
   // 🔹 User Login
   static Future<bool> login(String email, String password) async {
-  final response = await http.post(
-    Uri.parse("${getBaseUrl()}/login"),
-    headers: {"Content-Type": "application/json"},
-    body: jsonEncode({"email": email, "password": password}),
-  );
+    final response = await http.post(
+      Uri.parse("${getBaseUrl()}/login"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "password": password}),
+    );
 
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    final token = data['token'];
-    final userId = data['user']['id'].toString(); // ✅ Fetch User ID
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
+      final userId = data['user']['id'].toString(); // ✅ Fetch User ID
 
-    if (token != null && userId != null) {
-      await storage.write(key: "token", value: token);
-      await storage.write(key: "userId", value: userId); // ✅ Store User ID
-      print("✅ Stored User ID: $userId"); // Debug Log
-      return true;
+      if (token != null && userId != null) {
+        await storage.write(key: "token", value: token);
+        await storage.write(key: "userId", value: userId); // ✅ Store User ID
+        print("✅ Stored User ID: $userId"); // Debug Log
+        return true;
+      } else {
+        print("❌ Login API Response Missing userId or token");
+      }
     } else {
-      print("❌ Login API Response Missing userId or token");
+      print("❌ Login Failed: ${response.body}");
     }
-  } else {
-    print("❌ Login Failed: ${response.body}");
+    return false;
   }
-  return false;
-}
 
   // 🔹 Retrieve Token
   static Future<String?> getToken() async {
@@ -79,5 +79,37 @@ class AuthAPI {
   static Future<void> logout() async {
     await storage.delete(key: "token");
     await storage.delete(key: "userId"); // ✅ Clear User ID
+  }
+
+  // 🔹 Send OTP for Password Reset
+  static Future<bool> sendResetOTP(String email) async {
+    final response = await http.post(
+      Uri.parse("${getBaseUrl()}/send-reset-otp"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email}),
+    );
+
+    if (response.statusCode == 200) {
+      return true; // ✅ OTP sent successfully
+    }
+    return false; // ❌ Failed to send OTP
+  }
+
+  // 🔹 Reset Password with OTP
+  static Future<bool> resetPassword(String email, String otp, String newPassword) async {
+    final response = await http.post(
+      Uri.parse("${getBaseUrl()}/reset-password"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "otp": otp,
+        "newPassword": newPassword
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true; // ✅ Password reset successfully
+    }
+    return false; // ❌ Failed to reset password
   }
 }
