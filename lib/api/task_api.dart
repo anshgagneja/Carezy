@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TaskAPI {
-  static const String baseUrl = "http://10.50.3.152:5000";
+  static const String baseUrl = "http://10.50.3.207:5000";
   static final storage = FlutterSecureStorage();
 
   // 🔹 Fetch All Tasks

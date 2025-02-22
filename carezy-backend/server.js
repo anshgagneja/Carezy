@@ -4,13 +4,48 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('./database');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use('/uploads', express.static('uploads')); // ✅ Serve uploaded images
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const DB_HOST = process.env.DB_HOST || 'localhost';
+
+// ✅ Ensure `uploads` folder exists
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR);
+}
+
+// 📂 Serve Uploaded Profile Images
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+const mime = require('mime');  // ✅ Import MIME Library
+
+app.get('/uploads/:filename', (req, res) => {
+    const filePath = path.join(__dirname, 'uploads', req.params.filename);
+
+    if (fs.existsSync(filePath)) {
+        const mimeType = mime.getType(filePath);
+        res.setHeader('Content-Type', mimeType || 'image/jpeg');  // ✅ Set correct MIME type
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); // 🔥 Prevent caching
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Image not found');
+    }
+});
+
+
+
 
 // 🔹 Default Route
 app.get('/', (req, res) => {
@@ -87,6 +122,67 @@ const authenticate = (req, res, next) => {
         res.status(400).json({ error: "Invalid or expired token" });
     }
 };
+
+// 📂 Configure Multer for Profile Image Uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, UPLOADS_DIR);
+    },
+    filename: function (req, file, cb) {
+        const uniqueName = `${req.user.userId}_${Date.now()}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({ storage });
+
+// 🔹 Fetch User Profile
+app.get('/api/user/:id', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await pool.query('SELECT id, name, email, profile_image FROM users WHERE id = $1', [id]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(user.rows[0]);
+    } catch (err) {
+        console.error("❌ Fetch Profile Error:", err);
+        res.status(500).json({ error: "Failed to fetch profile" });
+    }
+});
+
+// 🔹 Update Profile Name
+app.put('/api/user/update-profile', authenticate, async (req, res) => {
+    try {
+        const { userId, name } = req.body;
+        await pool.query('UPDATE users SET name = $1 WHERE id = $2', [name, userId]);
+
+        res.json({ message: "Profile updated successfully" });
+    } catch (err) {
+        console.error("❌ Update Profile Error:", err);
+        res.status(500).json({ error: "Failed to update profile" });
+    }
+});
+
+
+
+// 🔹 Upload Profile Image
+app.post('/api/user/upload-image', authenticate, upload.single('profileImage'), async (req, res) => {
+    try {
+        const imagePath = `http://${DB_HOST}:5000/uploads/${req.file.filename}`;
+
+        await pool.query('UPDATE users SET profile_image = $1 WHERE id = $2', [imagePath, req.user.userId]);
+
+        res.json({ message: "Profile image updated successfully", profile_image: imagePath });
+    } catch (err) {
+        console.error("❌ Upload Image Error:", err);
+        res.status(500).json({ error: "Failed to upload image" });
+    }
+});
+
+
 
 // 🔹 Add Mood Entry
 app.post('/moods', authenticate, async (req, res) => {
@@ -226,7 +322,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
 
-const axios = require('axios');
+// const axios = require('axios');
 
 app.post('/music-recommendation', authenticate, async (req, res) => {
     try {

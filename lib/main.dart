@@ -1,13 +1,14 @@
-import 'package:carezy/screens/chat_bot_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv package
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'screens/login_screen.dart';
-import 'screens/signup_screen.dart'; // Added signup screen
+import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/task_screen.dart'; // Task screen included
+import 'screens/task_screen.dart';
+import 'screens/chat_bot_screen.dart';
 import 'utils/app_theme.dart';
 
 void main() async {
@@ -35,27 +36,35 @@ void main() async {
       await Firebase.initializeApp();
     }
   } catch (e) {
-    // If Firebase initialization fails, show an error message
-    runApp(ErrorApp(message: "Failed to initialize Firebase"));
+    runApp(ErrorApp(message: "Failed to initialize Firebase: $e"));
     return;
   }
 
-  // Retrieve the token from secure storage
+  // Retrieve token and user ID from secure storage
   final storage = FlutterSecureStorage();
   String? token;
+  String? userId;
 
   try {
     token = await storage.read(key: "token");
+    userId = await storage.read(key: "userId");
   } catch (e) {
+    print("❌ Error retrieving token or userId: $e");
     token = null;
+    userId = null;
   }
 
-  runApp(CarezyApp(token: token));
+  print("🔹 Stored Token: $token");
+  print("🔹 Stored User ID: $userId");
+
+  runApp(CarezyApp(token: token, userId: userId));
 }
 
 class CarezyApp extends StatelessWidget {
   final String? token;
-  CarezyApp({this.token});
+  final String? userId;
+
+  CarezyApp({this.token, this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +73,12 @@ class CarezyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      initialRoute: token != null ? '/home' : '/login', // Navigate based on token
+      initialRoute: (token != null && userId != null) ? '/home' : '/login', // ✅ Ensure user is authenticated
       routes: {
         '/login': (context) => LoginScreen(),
-        '/signup': (context) => SignupScreen(), // Route for Signup
+        '/signup': (context) => SignupScreen(),
         '/home': (context) => HomeScreen(),
-        '/tasks': (context) => TaskScreen(), // Route for Tasks
+        '/tasks': (context) => TaskScreen(),
         '/chatbot': (context) => ChatBotScreen(),
       },
     );

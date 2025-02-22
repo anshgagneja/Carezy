@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../api/auth_api.dart';
+import '../api/profile_api.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -11,17 +12,66 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   File? _profileImage;
   final ImagePicker _picker = ImagePicker();
-  String userName = "Ansh Gagneja"; // Fetch from backend later
-  String userEmail = "ansh@example.com"; // Fetch from backend later
+  String userName = "Loading...";
+  String userEmail = "Loading...";
+  String? profileImageUrl;
+  bool isLoading = true; // ✅ Added loading state
 
-  // 📷 Pick image from gallery
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  // 🔹 Fetch Profile Data
+  Future<void> _loadUserProfile() async {
+    final profileData = await ProfileAPI.fetchProfile();
+    if (profileData != null) {
       setState(() {
-        _profileImage = File(pickedFile.path);
+        userName = profileData["name"] ?? "No Name";
+        userEmail = profileData["email"] ?? "No Email";
+        profileImageUrl = profileData["profile_image"];
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        userName = "User not found";
+        userEmail = "No Email";
+        isLoading = false;
       });
     }
+  }
+
+  // 📷 Pick and Upload Image
+  bool isUploading = false; // ✅ Prevent multiple uploads
+
+  Future<void> _pickAndUploadImage() async {
+    if (isUploading) return; // ✅ Prevent multiple taps
+    isUploading = true;
+
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      setState(() {
+        _profileImage = imageFile;
+      });
+
+      print("📤 Uploading Image...");
+
+      // Upload image to backend
+      final uploadedImageUrl = await ProfileAPI.uploadProfileImage(imageFile);
+
+      if (uploadedImageUrl != null) {
+        setState(() {
+          profileImageUrl = uploadedImageUrl;
+        });
+        print("✅ Image Uploaded: $uploadedImageUrl");
+      } else {
+        print("❌ Image Upload Failed");
+      }
+    }
+
+    isUploading = false; // ✅ Reset flag after upload
   }
 
   // 🔹 Logout Function
@@ -33,10 +83,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // 🔥 Sleek Dark Mode
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 🔹 Gradient Background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -46,60 +95,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-
-          // 🔹 Profile Content
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 40),
-
-                // 🔹 Profile Picture
+                // 🔹 Profile Picture with Proper Error Handling
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: _pickAndUploadImage,
                   child: Stack(
                     alignment: Alignment.bottomRight,
                     children: [
                       CircleAvatar(
                         radius: 60,
                         backgroundColor: Colors.white,
-                        backgroundImage: _profileImage != null
-                            ? FileImage(_profileImage!)
-                            : AssetImage('assets/images/avatar.png') as ImageProvider,
+                        backgroundImage: profileImageUrl != null
+                            ? NetworkImage(
+                                "$profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}") // 🔥 Force Refresh
+                            : AssetImage('assets/images/avatar.png')
+                                as ImageProvider,
+                        onBackgroundImageError: (_, __) {
+                          print("❌ Image Load Error - Using default avatar");
+                          setState(() {
+                            profileImageUrl = null; // Reset to default avatar
+                          });
+                        },
                       ),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.deepPurpleAccent,
                           shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 3)],
+                          boxShadow: [
+                            BoxShadow(color: Colors.black26, blurRadius: 3)
+                          ],
                         ),
                         padding: EdgeInsets.all(6),
-                        child: Icon(Icons.camera_alt, color: Colors.white, size: 22),
+                        child: Icon(Icons.camera_alt,
+                            color: Colors.white, size: 22),
                       ),
                     ],
                   ),
                 ),
 
                 SizedBox(height: 20),
-
-                // 🔹 User Info Card
                 Card(
                   elevation: 10,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  color: Colors.white.withOpacity(0.1), // Glass effect
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  color: Colors.white.withOpacity(0.1),
                   margin: EdgeInsets.symmetric(horizontal: 30),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        Text(userName,
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                        SizedBox(height: 5),
-                        Text(userEmail, style: TextStyle(fontSize: 16, color: Colors.white70)),
+                        isLoading
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : Column(
+                                children: [
+                                  Text(userName,
+                                      style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                  SizedBox(height: 5),
+                                  Text(userEmail,
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white70)),
+                                ],
+                              ),
                         SizedBox(height: 15),
                         Divider(color: Colors.white30),
-
-                        // 🔹 Profile Actions
                         _buildProfileOption(Icons.person, "Edit Profile"),
                         _buildProfileOption(Icons.lock, "Change Password"),
                         _buildProfileOption(Icons.settings, "Settings"),
@@ -107,21 +172,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-
                 SizedBox(height: 30),
-
-                // 🔹 Logout Button
                 ElevatedButton.icon(
                   onPressed: () => logout(context),
                   icon: Icon(Icons.exit_to_app, color: Colors.white),
-                  label: Text("Logout", style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: Text("Logout",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    shadowColor: Colors.redAccent.withOpacity(0.5),
-                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
               ],
@@ -132,13 +194,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 🔹 Profile Option Widget
   Widget _buildProfileOption(IconData icon, String title) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: TextStyle(fontSize: 16, color: Colors.white)),
       trailing: Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-      onTap: () {},
     );
   }
 }
