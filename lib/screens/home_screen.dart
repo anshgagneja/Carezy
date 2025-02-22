@@ -3,6 +3,7 @@ import 'package:carezy/screens/mood_screen.dart';
 import 'package:carezy/screens/task_screen.dart';
 import 'package:carezy/screens/chat_bot_screen.dart';
 import 'package:carezy/screens/profile_screen.dart';
+import '../api/profile_api.dart';
 import '../api/mood_api.dart';
 import 'package:carezy/widgets/mood_graph.dart';
 import 'package:carezy/widgets/quick_tasks.dart';
@@ -19,36 +20,42 @@ class _HomeScreenState extends State<HomeScreen> {
     HomeContent(),
     MoodScreen(),
     TaskScreen(),
-    ChatBotScreen(), // Carezy Companion
+    ChatBotScreen(),
     ProfileScreen(),
   ];
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     setState(() {
       _selectedIndex = index;
     });
+
+    // ✅ Refresh profile image when switching back to Home or Profile
+    if (index == 0 || index == 4) {
+      _screens[0] = HomeContent();
+      _screens[4] = ProfileScreen();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // 🔹 Ensures full black background
+      color: Colors.black,
       child: Scaffold(
-        backgroundColor: Colors.black, // 🔹 Matches background with navbar
+        backgroundColor: Colors.black,
         body: _screens[_selectedIndex],
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            color: Colors.black, // 🔹 Matches screen background
+            color: Colors.black,
           ),
-          clipBehavior: Clip.hardEdge, // 🔹 Prevents white leaks at rounded corners
+          clipBehavior: Clip.hardEdge,
           child: BottomNavigationBar(
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
-            backgroundColor: Colors.black, // 🔹 Matches background
+            backgroundColor: Colors.black,
             selectedItemColor: Colors.deepPurpleAccent,
             unselectedItemColor: Colors.white60,
-            elevation: 0, // 🔹 No extra shadows
+            elevation: 0,
             showUnselectedLabels: true,
             type: BottomNavigationBarType.fixed,
             items: const [
@@ -74,11 +81,22 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   List<dynamic> moodHistory = [];
   bool isLoading = false;
+  String? profileImageUrl;
 
   @override
   void initState() {
     super.initState();
+    fetchProfileData();
     fetchMoodHistory();
+  }
+
+  Future<void> fetchProfileData() async {
+    final profileData = await ProfileAPI.fetchProfile();
+    if (profileData != null) {
+      setState(() {
+        profileImageUrl = profileData["profile_image"];
+      });
+    }
   }
 
   void fetchMoodHistory() async {
@@ -135,9 +153,21 @@ class _HomeContentState extends State<HomeContent> {
                     ),
                   ],
                 ),
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: AssetImage("assets/images/profile_placeholder.png"),
+                GestureDetector(
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfileScreen()),
+                    );
+                    fetchProfileData(); // ✅ Refresh profile image on return
+                  },
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundImage: profileImageUrl != null
+                        ? NetworkImage(
+                            "$profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}") // 🔥 Force Refresh
+                        : AssetImage("assets/images/profile_placeholder.png") as ImageProvider,
+                  ),
                 ),
               ],
             ),
@@ -238,7 +268,7 @@ class _HomeContentState extends State<HomeContent> {
             // 🔹 Quick Tasks (Only Pending Tasks)
             Text("Upcoming Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
             SizedBox(height: 10),
-            QuickTasks(showCompleted: false), // ✅ Only Pending Tasks
+            QuickTasks(showCompleted: false),
 
             SizedBox(height: 30),
           ],
