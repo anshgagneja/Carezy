@@ -16,7 +16,22 @@ app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static('uploads')); // ✅ Serve uploaded images
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+//const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
+async function generateResponse(prompt) {
+  try {
+      const response = await axios.post(GEMINI_API_URL, {
+          contents: [{ role: "user", parts: [{ text: prompt }] }]
+      });
+
+      console.log("✅ Gemini Response:", response.data);
+      return response.data;
+  } catch (error) {
+      console.error("❌ Chatbot Error:", error.response ? error.response.data : error.message);
+      return { error: "Failed to generate response from Gemini AI" };
+  }
+}
 const DB_HOST = process.env.DB_HOST || 'localhost';
 
 // ✅ Ensure `uploads` folder exists
@@ -220,37 +235,59 @@ app.get('/moods', authenticate, async (req, res) => {
 });
 
 
-// 🔹 AI-Powered Mood Analysis (Gemini AI)
+async function analyzeMood(mood_score, note) {
+  try {
+      const prompt = `
+      A user is feeling ${mood_score}/10 today.
+      They wrote the following note about their mood: "${note}". 
+
+      **Task:**
+      1️⃣ Identify the key issue in the note.  
+      2️⃣ Suggest **3 activities** to improve the user's mood.  
+      3️⃣ Ensure your response is clear, actionable, and positive.  
+
+      **Examples:**
+      - If the note says "I got low marks," suggest study tips or stress relief techniques.
+      - If the note says "I had a fight," suggest conflict resolution strategies.
+      - If the note says "I'm exhausted," suggest rest and relaxation activities.
+      `;
+
+      const response = await axios.post(GEMINI_API_URL, {
+          contents: [{ role: "user", parts: [{ text: prompt }] }]
+      });
+
+      console.log("✅ Gemini Mood Analysis Response:", response.data);
+
+      return response.data;
+  } catch (error) {
+      console.error("❌ AI Mood Analysis Error:", error.response ? error.response.data : error.message);
+      return { error: "Failed to analyze mood" };
+  }
+}
+
+// 🔹 New AI Mood Analysis Route
 app.post('/ai/analyze-mood', authenticate, async (req, res) => {
-    try {
-        const { mood_score, note } = req.body; // 🔹 Get both mood_score & note
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  try {
+      const { mood_score, note } = req.body;
 
-        // 🔹 Stronger AI Prompt (Forces it to analyze the note)
-        const prompt = `
-        A user is feeling ${mood_score}/10 today.
-        They wrote the following note about their mood: "${note}". 
+      if (!note || mood_score === undefined) {
+          return res.status(400).json({ error: "Both mood_score and note are required" });
+      }
 
-        1️⃣ **Identify the key issue mentioned in the note.**  
-        2️⃣ **Based on that issue, suggest 3 activities that can improve their mood.**  
-        3️⃣ **Make sure the response directly addresses their concern.**  
+      // Call Gemini AI for mood analysis
+      const result = await analyzeMood(mood_score, note);
 
-        Example:
-        - If the note mentions "I got low marks," suggest study strategies or stress relief tips.
-        - If the note mentions "I had a fight," suggest conflict resolution or emotional support ideas.
-        - If the note mentions "I'm exhausted," suggest rest-related activities.
+      if (!result || !result.candidates || result.candidates.length === 0) {
+          throw new Error("Invalid response from Gemini AI");
+      }
 
-        Provide clear, actionable, and positive recommendations.
-        `;
+      const suggestion = result.candidates[0].content.parts[0].text;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.candidates[0].content.parts[0].text;
-
-        res.json({ suggestion: text });
-    } catch (error) {
-        console.error("❌ AI Analysis Error:", error);
-        res.status(500).json({ error: 'AI analysis failed' });
-    }
+      res.json({ suggestion });
+  } catch (error) {
+      console.error("❌ AI Mood Analysis Error:", error.message);
+      res.status(500).json({ error: 'AI analysis failed' });
+  }
 });
 
 // 🔹 Add a New Task
@@ -364,33 +401,43 @@ app.post('/music-recommendation', authenticate, async (req, res) => {
   });
   let conversationHistories = {}; // Store conversation history per user
 
-app.post('/chatbot', authenticate, async (req, res) => {
-  try {
-    const { query } = req.body;
-    const userId = req.user.userId;
+  app.post('/chatbot', authenticate, async (req, res) => {
+    try {
+        const { query } = req.body;
+        const userId = req.user.userId;
 
-    if (!conversationHistories[userId]) {
-      conversationHistories[userId] = [];
+        if (!query) {
+            return res.status(400).json({ error: "Query is required" });
+        }
+
+        if (!conversationHistories[userId]) {
+            conversationHistories[userId] = [];
+        }
+
+        conversationHistories[userId].push({ role: "user", content: query });
+
+        // Prepare chat history as a prompt
+        const prompt = conversationHistories[userId]
+            .map((entry) => `${entry.role}: ${entry.content}`)
+            .join("\n");
+
+        // Call the Gemini API
+        const result = await generateResponse(prompt);
+
+        // Extract response
+        if (!result || !result.candidates || result.candidates.length === 0) {
+            throw new Error("Invalid response from Gemini API");
+        }
+
+        const botResponse = result.candidates[0].content.parts[0].text;
+
+        conversationHistories[userId].push({ role: "bot", content: botResponse });
+
+        res.json({ response: botResponse });
+    } catch (error) {
+        console.error("❌ Chatbot Error:", error.message);
+        res.status(500).json({ error: 'Failed to generate chatbot response' });
     }
-
-    conversationHistories[userId].push({ role: "user", content: query });
-
-    const prompt = conversationHistories[userId]
-      .map((entry) => `${entry.role}: ${entry.content}`)
-      .join("\n");
-
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const result = await model.generateContent(prompt);
-
-    const botResponse = result.response.candidates[0].content.parts[0].text;
-
-    conversationHistories[userId].push({ role: "bot", content: botResponse });
-
-    res.json({ response: botResponse });
-  } catch (error) {
-    console.error("❌ Chatbot Error:", error.message);
-    res.status(500).json({ error: 'Failed to generate chatbot response' });
-  }
 });
 const nodemailer = require("nodemailer"); // ✅ Add Nodemailer for email
 

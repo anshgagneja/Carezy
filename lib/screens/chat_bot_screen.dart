@@ -26,9 +26,10 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   final Map<String, String> _answers = {};
 
   // ✅ Backend URL
-  final String _backendUrl = 'http://10.50.3.207:5000/chatbot';
+  final String _backendUrl = 'http://192.168.1.5:5000/chatbot';
 
   // ✅ Secure storage for token retrieval
+
   final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   Future<String?> _getAuthToken() async {
