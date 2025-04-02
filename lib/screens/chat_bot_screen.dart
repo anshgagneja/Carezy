@@ -12,24 +12,11 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   final TextEditingController _inputController = TextEditingController();
   final List<Map<String, String>> _conversation = [];
   bool _isLoading = false;
-  bool _isAskingMCQs = true;
-  int _currentMCQIndex = 0;
-
-  // ✅ MCQ Questions
-  final List<Map<String, dynamic>> _mcqs = [
-    {"question": "How are you feeling today?", "options": ["Happy", "Sad", "Neutral"]},
-    {"question": "Have you been stressed lately?", "options": ["Yes", "No"]},
-    {"question": "Are you getting enough sleep?", "options": ["Yes", "No"]},
-    {"question": "How often do you exercise?", "options": ["Daily", "Sometimes", "Never"]},
-    {"question": "Do you feel socially connected?", "options": ["Yes", "No"]},
-  ];
-  final Map<String, String> _answers = {};
 
   // ✅ Backend URL
   final String _backendUrl = 'http://192.168.1.5:5000/chatbot';
 
   // ✅ Secure storage for token retrieval
-
   final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   Future<String?> _getAuthToken() async {
@@ -74,74 +61,14 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
-  void _handleMCQAnswer(String answer) {
-    _answers[_mcqs[_currentMCQIndex]['question']] = answer;
-    if (_currentMCQIndex < _mcqs.length - 1) {
-      setState(() => _currentMCQIndex++);
-    } else {
-      _provideSuggestion();
-    }
-  }
-
-  void _provideSuggestion() {
-    String suggestion = "Based on your answers:\n\n";
-
-    if (_answers["How are you feeling today?"] == "Happy") {
-      suggestion += "- Great! Keep spreading positivity. 😊\n";
-    } else if (_answers["How are you feeling today?"] == "Sad") {
-      suggestion += "- Try mindfulness or talking to a friend. 🌟\n";
-    } else {
-      suggestion += "- Maybe a new hobby can brighten your day! 🎨\n";
-    }
-
-    setState(() {
-      _conversation.add({"role": "bot", "content": suggestion});
-      _isAskingMCQs = false;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
-        _conversation.add({"role": "bot", "content": "👋 How are you feeling today?"});
+        _conversation.add({"role": "bot", "content": "👋 Hey there! This is Carezy Assistant. Talk to me about anything!"});
       });
     });
-  }
-
-  // ✅ Modern MCQ UI
-  Widget _buildMCQCard(Map<String, dynamic> mcq) {
-    return Card(
-      margin: EdgeInsets.all(16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      color: Colors.black.withOpacity(0.8), // Dark Glassmorphic Look
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(mcq['question'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-            SizedBox(height: 12),
-            ...mcq['options'].map<Widget>((option) {
-              return Container(
-                margin: EdgeInsets.symmetric(vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade900,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: ListTile(
-                  title: Text(option, style: TextStyle(fontSize: 16, color: Colors.white)),
-                  onTap: () => _handleMCQAnswer(option),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              );
-            }).toList(),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -180,7 +107,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               },
             ),
           ),
-          if (_isAskingMCQs) _buildMCQCard(_mcqs[_currentMCQIndex]),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
