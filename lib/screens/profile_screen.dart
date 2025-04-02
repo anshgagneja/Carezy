@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../api/auth_api.dart';
 import '../api/profile_api.dart';
+import 'forgot_password_screen.dart';
+import 'home_screen.dart'; // ✅ Import HomeScreen
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -15,7 +17,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userName = "Loading...";
   String userEmail = "Loading...";
   String? profileImageUrl;
-  bool isLoading = true; // ✅ Added loading state
+  bool isLoading = true;
+  bool isUploading = false;
 
   @override
   void initState() {
@@ -23,7 +26,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserProfile();
   }
 
-  // 🔹 Fetch Profile Data
   Future<void> _loadUserProfile() async {
     final profileData = await ProfileAPI.fetchProfile();
     if (profileData != null) {
@@ -42,11 +44,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // 📷 Pick and Upload Image
-  bool isUploading = false; // ✅ Prevent multiple uploads
-
   Future<void> _pickAndUploadImage() async {
-    if (isUploading) return; // ✅ Prevent multiple taps
+    if (isUploading) return;
     isUploading = true;
 
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -56,34 +55,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _profileImage = imageFile;
       });
 
-      print("📤 Uploading Image...");
-
-      // Upload image to backend
       final uploadedImageUrl = await ProfileAPI.uploadProfileImage(imageFile);
 
       if (uploadedImageUrl != null) {
         setState(() {
           profileImageUrl = uploadedImageUrl;
         });
-        print("✅ Image Uploaded: $uploadedImageUrl");
-      } else {
-        print("❌ Image Upload Failed");
       }
     }
 
-    isUploading = false; // ✅ Reset flag after upload
+    isUploading = false;
   }
 
-  // 🔹 Logout Function
   void logout(BuildContext context) async {
     await AuthAPI.logout();
     Navigator.pushReplacementNamed(context, '/login');
   }
 
+  void navigateToForgotPassword(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+    );
+  }
+
+  void navigateToHome(BuildContext context) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context); // ✅ Go back if possible (Fixes bottom navbar issue)
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      ); // ✅ Ensure HomeScreen is shown if no back stack exists
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => navigateToHome(context), // ✅ Always navigates to HomeScreen
+        ),
+        title: Text("Profile", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+      ),
       body: Stack(
         children: [
           Container(
@@ -99,8 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 40),
-                // 🔹 Profile Picture with Proper Error Handling
+                SizedBox(height: 20),
                 GestureDetector(
                   onTap: _pickAndUploadImage,
                   child: Stack(
@@ -111,15 +131,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundColor: Colors.white,
                         backgroundImage: profileImageUrl != null
                             ? NetworkImage(
-                                "$profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}") // 🔥 Force Refresh
+                                "$profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}")
                             : AssetImage('assets/images/avatar.png')
                                 as ImageProvider,
-                        onBackgroundImageError: (_, __) {
-                          print("❌ Image Load Error - Using default avatar");
-                          setState(() {
-                            profileImageUrl = null; // Reset to default avatar
-                          });
-                        },
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -165,9 +179,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                         SizedBox(height: 15),
                         Divider(color: Colors.white30),
-                        _buildProfileOption(Icons.person, "Edit Profile"),
-                        _buildProfileOption(Icons.lock, "Change Password"),
-                        _buildProfileOption(Icons.settings, "Settings"),
+                        _buildProfileOption(
+                            Icons.lock, "Change Password", () {
+                          navigateToForgotPassword(context);
+                        }),
                       ],
                     ),
                   ),
@@ -194,11 +209,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title) {
+  Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: TextStyle(fontSize: 16, color: Colors.white)),
       trailing: Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+      onTap: onTap,
     );
   }
 }

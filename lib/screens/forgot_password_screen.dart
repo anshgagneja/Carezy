@@ -230,7 +230,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      "Back to Login",
+                      "Back",
                       style: TextStyle(
                         color: Colors.blueAccent,
                         fontSize: 16,
