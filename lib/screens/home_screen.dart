@@ -60,10 +60,13 @@ class _HomeScreenState extends State<HomeScreen> {
             type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.emoji_emotions), label: 'Mood'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.emoji_emotions), label: 'Mood'),
               BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
-              BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Carezy Companion'),
-              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.smart_toy), label: 'Carezy Companion'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person), label: 'Profile'),
             ],
           ),
         ),
@@ -135,38 +138,45 @@ class _HomeContentState extends State<HomeContent> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 50),
-
             // 🔹 Greeting Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _getGreetingMessage(),
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    Text(
-                      "Stay mindful & track your journey 🌿",
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
-                    ),
-                  ],
+                Expanded(
+                  // ✅ Ensures text doesn't take too much space
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getGreetingMessage(),
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                      Text(
+                        "Stay mindful & track your journey 🌿",
+                        style: TextStyle(fontSize: 16, color: Colors.white70),
+                      ),
+                    ],
+                  ),
                 ),
+                SizedBox(width: 10), // ✅ Add spacing
                 GestureDetector(
                   onTap: () async {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ProfileScreen()),
                     );
-                    fetchProfileData(); // ✅ Refresh profile image on return
+                    fetchProfileData();
                   },
                   child: CircleAvatar(
                     radius: 30,
                     backgroundImage: profileImageUrl != null
                         ? NetworkImage(
                             "$profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}") // 🔥 Force Refresh
-                        : AssetImage("assets/images/profile_placeholder.png") as ImageProvider,
+                        : AssetImage("assets/images/profile_placeholder.png")
+                            as ImageProvider,
                   ),
                 ),
               ],
@@ -177,7 +187,8 @@ class _HomeContentState extends State<HomeContent> {
             // 🔥 Track Your Mood
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => MoodScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => MoodScreen()));
               },
               child: Container(
                 padding: EdgeInsets.all(16),
@@ -195,7 +206,8 @@ class _HomeContentState extends State<HomeContent> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.bar_chart_rounded, size: 30, color: Colors.deepPurpleAccent),
+                    Icon(Icons.bar_chart_rounded,
+                        size: 30, color: Colors.deepPurpleAccent),
                     SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -203,16 +215,21 @@ class _HomeContentState extends State<HomeContent> {
                         children: [
                           Text(
                             "Track Your Mood",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                           ),
                           Text(
                             "Log how you feel & monitor trends",
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white70),
+                    Icon(Icons.arrow_forward_ios,
+                        size: 18, color: Colors.white70),
                   ],
                 ),
               ),
@@ -223,7 +240,8 @@ class _HomeContentState extends State<HomeContent> {
             // 🔥 Carezy Companion
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ChatBotScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ChatBotScreen()));
               },
               child: Container(
                 padding: EdgeInsets.all(16),
@@ -241,16 +259,21 @@ class _HomeContentState extends State<HomeContent> {
                         children: [
                           Text(
                             "Carezy Companion",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                           ),
                           Text(
                             "Daily Check-ins & AI chat support",
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white70),
+                    Icon(Icons.arrow_forward_ios,
+                        size: 18, color: Colors.white70),
                   ],
                 ),
               ),
@@ -259,14 +282,24 @@ class _HomeContentState extends State<HomeContent> {
             SizedBox(height: 20),
 
             // 🔹 Mood Graph
-            Text("Your Mood Trends", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text("Your Mood Trends",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
             SizedBox(height: 10),
-            isLoading ? Center(child: CircularProgressIndicator(color: Colors.white)) : MoodGraph(moodHistory: moodHistory),
+            isLoading
+                ? Center(child: CircularProgressIndicator(color: Colors.white))
+                : MoodGraph(moodHistory: moodHistory),
 
             SizedBox(height: 20),
 
             // 🔹 Quick Tasks (Only Pending Tasks)
-            Text("Upcoming Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text("Upcoming Tasks",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
             SizedBox(height: 10),
             QuickTasks(showCompleted: false),
 
