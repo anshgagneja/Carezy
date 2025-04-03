@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+require("dotenv").config();
+const { Pool } = require("pg");
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -7,9 +7,14 @@ const pool = new Pool({
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
-    ssl: { rejectUnauthorized: false },  // ✅ Required for Supabase
-    idleTimeoutMillis: 30000,  // Keep connections open for 30s
-    connectionTimeoutMillis: 5000,  // 5s timeout
+    ssl: { 
+        require: true, 
+        rejectUnauthorized: false 
+    }, // ✅ Required for Render + Supabase
 });
+
+pool.connect()
+    .then(() => console.log("✅ Connected to Database"))
+    .catch(err => console.error("❌ Database Connection Error:", err));
 
 module.exports = pool;
