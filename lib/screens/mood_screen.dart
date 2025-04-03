@@ -166,14 +166,14 @@ class _MoodScreenState extends State<MoodScreen> {
     return ElevatedButton(
       onPressed: getMusicSuggestion,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromARGB(150, 255, 255, 255),
+        backgroundColor: const Color.fromARGB(231, 40, 26, 45),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 15),
       ),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.music_note, size: 20, color: Colors.tealAccent),
+          Icon(Icons.music_note, size: 20, color: Color.fromARGB(255, 6, 18, 61)),
           SizedBox(width: 8),
           Text("Get Mood-Based Music", style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold)),
         ],

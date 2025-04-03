@@ -9,108 +9,126 @@ import 'package:carezy/widgets/mood_graph.dart';
 import 'package:carezy/widgets/quick_tasks.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key}); 
+  const HomeScreen({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  
+
   final List<Widget> _screens = [
     const HomeContent(),
     const MoodScreen(),
     const TaskScreen(),
-    ChatBotScreen(),
+    const ChatBotScreen(),
     const ProfileScreen(),
   ];
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     setState(() {
       _selectedIndex = index;
     });
 
-    if (index == 4) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileScreen()),
-      );
+    // ✅ Refresh profile image when switching back to Home or Profile
+    if (index == 0 || index == 4) {
+      _screens[0] = const HomeContent();
+      _screens[4] = const ProfileScreen();
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.deepPurpleAccent,
-        unselectedItemColor: Colors.white60,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_emotions), label: 'Mood'),
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Carezy Companion'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
-    );
-  }
-}
-
-class HomeContent extends StatefulWidget {
-  const HomeContent({super.key}); // Added 'key' parameter
-
-   @override
-  HomeContentState createState() => HomeContentState();
-}
-
-class HomeContentState extends State<HomeContent> {
-  List<dynamic> moodHistory = [];
-  bool isLoading = false;
-  String? profileImageUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProfileData();
-    fetchMoodHistory();
-  }
-
-  Future<void> fetchProfileData() async {
-    final profileData = await ProfileAPI.fetchProfile();
-    if (profileData != null) {
-      setState(() {
-        profileImageUrl = profileData["profile_image"];
-      });
-    }
-  }
-
-  Future<void> fetchMoodHistory() async {
-    setState(() => isLoading = true);
-    final moods = await MoodAPI.getMoodHistory();
-    setState(() {
-      isLoading = false;
-      moodHistory = moods ?? [];
-    });
-  }
-
-  String _getGreetingMessage() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return "Good Morning! ☀️";
-    if (hour < 17) return "Good Afternoon! 🌤️";
-    return "Good Evening! 🌙";
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      color: Colors.black,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: _screens[_selectedIndex],
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            color: Colors.black,
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            backgroundColor: Colors.black,
+            selectedItemColor: Colors.deepPurpleAccent,
+            unselectedItemColor: Colors.white60,
+            elevation: 0,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.emoji_emotions), label: 'Mood'),
+              BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.smart_toy), label: 'Carezy Companion'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person), label: 'Profile'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 🔹 Main Home Content
+class HomeContent extends StatefulWidget {
+  const HomeContent({super.key});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  List<dynamic> _moodHistory = [];
+  bool _isLoading = false;
+  String? _profileImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfileData();
+    _fetchMoodHistory();
+  }
+
+  Future<void> _fetchProfileData() async {
+    final profileData = await ProfileAPI.fetchProfile();
+    if (profileData != null) {
+      setState(() {
+        _profileImageUrl = profileData["profile_image"];
+      });
+    }
+  }
+
+  void _fetchMoodHistory() async {
+    setState(() => _isLoading = true);
+    final moods = await MoodAPI.getMoodHistory();
+    setState(() {
+      _isLoading = false;
+      _moodHistory = moods ?? [];
+    });
+  }
+
+  String _getGreetingMessage() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return "Good Morning! ☀️";
+    } else if (hour < 17) {
+      return "Good Afternoon! 🌤️";
+    } else {
+      return "Good Evening! 🌙";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.black, Colors.black87],
@@ -119,10 +137,13 @@ class HomeContentState extends State<HomeContent> {
         ),
       ),
       child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 50),
+
+            // 🔹 Greeting Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -133,10 +154,9 @@ class HomeContentState extends State<HomeContent> {
                       Text(
                         _getGreetingMessage(),
                         style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                       const Text(
                         "Stay mindful & track your journey 🌿",
@@ -145,91 +165,127 @@ class HomeContentState extends State<HomeContent> {
                     ],
                   ),
                 ),
+                const SizedBox(width: 10),
                 GestureDetector(
                   onTap: () async {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const ProfileScreen()),
                     );
-                    fetchProfileData();
+                    _fetchProfileData();
                   },
                   child: CircleAvatar(
                     radius: 30,
-                    backgroundImage: profileImageUrl != null
-                        ? NetworkImage("$profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}")
-                        : const AssetImage("assets/images/profile_placeholder.png") as ImageProvider,
+                    backgroundImage: _profileImageUrl != null
+                        ? NetworkImage(
+                            "$_profileImageUrl?t=${DateTime.now().millisecondsSinceEpoch}") // 🔥 Force Refresh
+                        : const AssetImage("assets/images/profile_placeholder.png")
+                            as ImageProvider,
                   ),
                 ),
               ],
             ),
+
             const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MoodScreen())),
-              child: _buildFeatureCard(
-                icon: Icons.bar_chart_rounded,
-                title: "Track Your Mood",
-                subtitle: "Log how you feel & monitor trends",
-              ),
+
+            // 🔥 Track Your Mood
+            _buildFeatureTile(
+              context,
+              icon: Icons.bar_chart_rounded,
+              title: "Track Your Mood",
+              subtitle: "Log how you feel & monitor trends",
+              onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => const MoodScreen()));
+              },
+              backgroundColor: Colors.grey.shade900,  // ✅ Darker background for contrast
+               borderColor: Colors.deepPurpleAccent,  // ✅ Vibrant border
+  shadowColor: Colors.deepPurpleAccent.withAlpha(80),
             ),
+
             const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ChatBotScreen())),
-              child: _buildFeatureCard(
-                icon: Icons.smart_toy,
-                title: "Carezy Companion",
-                subtitle: "Daily Check-ins & AI chat support",
-              ),
+
+            // 🔥 Carezy Companion
+            _buildFeatureTile(
+              context,
+              icon: Icons.smart_toy,
+              title: "Carezy Companion",
+              subtitle: "Daily Check-ins & AI chat support",
+              onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => const ChatBotScreen()));
+              },
+              backgroundColor: Colors.deepPurple.withAlpha(50), // ✅ Replaced withAlpha()
             ),
+
             const SizedBox(height: 20),
-            const Text(
-              "Your Mood Trends",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
+
+            // 🔹 Mood Graph
+            const Text("Your Mood Trends",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
             const SizedBox(height: 10),
-            isLoading
+            _isLoading
                 ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                : MoodGraph(moodHistory: moodHistory),
+                : MoodGraph(moodHistory: _moodHistory),
+
             const SizedBox(height: 20),
-            QuickTasks(),
+
+            // 🔹 Quick Tasks (Only Pending Tasks)
+            const Text("Upcoming Tasks",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            const SizedBox(height: 10),
+            const QuickTasks(showCompleted: false),
+
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFeatureCard({required IconData icon, required String title, required String subtitle}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade900,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.deepPurpleAccent, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurpleAccent.withAlpha(50), // Replaced 'withOpacity'
-            blurRadius: 8,
-            offset: const Offset(2, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 30, color: Colors.deepPurpleAccent),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-              ],
+  Widget _buildFeatureTile(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String subtitle,
+      required VoidCallback onTap,
+      Color borderColor = Colors.transparent, // ✅ New Parameter
+      Color shadowColor = Colors.transparent, // ✅ New Parameter
+      Color backgroundColor = Colors.black}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                  Text(subtitle,
+                      style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white70),
-        ],
+            const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white70),
+          ],
+        ),
       ),
     );
   }

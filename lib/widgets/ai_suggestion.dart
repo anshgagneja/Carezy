@@ -14,7 +14,7 @@ class AISuggestionWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: Colors.blueAccent.withOpacity(0.1),
+          color: Colors.blueAccent.withAlpha((0.1 * 255).toInt()), // ✅ Updated here
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.blueAccent),
         ),

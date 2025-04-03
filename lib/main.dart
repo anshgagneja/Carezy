@@ -66,11 +66,11 @@ class CarezyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: (token != null && userId != null) ? '/home' : '/login',
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignupScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/tasks': (context) => const TaskScreen(),
-        '/chatbot': (context) => const ChatBotScreen(),
+        '/login': (context) => LoginScreen(),
+        '/signup': (context) => SignupScreen(),
+        '/home': (context) => HomeScreen(),
+        '/tasks': (context) => TaskScreen(),
+        '/chatbot': (context) => ChatBotScreen(),
       },
     );
   }

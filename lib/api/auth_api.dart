@@ -12,7 +12,7 @@ class AuthAPI {
     if (kIsWeb) {
       return "http://localhost:5000"; // Web
     } else if (Platform.isAndroid) {
-      return "http://192.168.1.5:5000"; // Android Emulator
+      return "http://192.168.1.7:5000"; // Android Emulator
     } else {
       return "http://localhost:5000"; // iOS & real devices
     }

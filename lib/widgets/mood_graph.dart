@@ -4,19 +4,23 @@ import 'package:fl_chart/fl_chart.dart';
 class MoodGraph extends StatelessWidget {
   final List<dynamic> moodHistory;
 
-  MoodGraph({required this.moodHistory});
+  const MoodGraph({super.key, required this.moodHistory}); // ✅ Used super.key
 
   @override
   Widget build(BuildContext context) {
     return moodHistory.isEmpty
-        ? Text("No mood data available.")
+        ? const Text("No mood data available.") // ✅ Use const for static widgets
         : SizedBox(
             height: 300,
             child: LineChart(
               LineChartData(
                 titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
+                  ),
                 ),
                 gridData: FlGridData(show: false),
                 borderData: FlBorderData(show: false),
@@ -30,7 +34,10 @@ class MoodGraph extends StatelessWidget {
                     isCurved: true,
                     color: Colors.blue,
                     barWidth: 3,
-                    belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.3)),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: Colors.blue.withAlpha(77), // ✅ Replaced .withOpacity(0.3)
+                    ),
                   ),
                 ],
               ),

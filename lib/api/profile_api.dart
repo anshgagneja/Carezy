@@ -9,7 +9,7 @@ class ProfileAPI {
 
   // 🔹 Determine Base URL
   static String getBaseUrl() {
-    if (kIsWeb) return "http://localhost:5000"; // Web
+    if (kIsWeb) return "http://192.168.1.7:5000"; // Web
     return Platform.isAndroid ? "http://192.168.1.7:5000" : "http://localhost:5000";
   }
 

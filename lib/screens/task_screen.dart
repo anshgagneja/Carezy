@@ -1,63 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart'; // For animations
 import '../api/task_api.dart';
 
 class TaskScreen extends StatefulWidget {
-  const TaskScreen({super.key}); // ✅ Added named 'key' parameter
+  const TaskScreen({super.key}); // ✅ Added key
 
   @override
-  TaskScreenState createState() => TaskScreenState(); // ✅ Changed _TaskScreenState to public
+  State<TaskScreen> createState() => TaskScreenState(); // ✅ Made public
 }
 
 class TaskScreenState extends State<TaskScreen> {
-  TextEditingController titleController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
+  List<dynamic> tasks = []; // ✅ Removed null-aware operator
+  bool isLoading = false;
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
-  Future<List<dynamic>> fetchTasks() async {
-    return await TaskAPI.getTasks();
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks();
   }
 
-  void addTask() async {
-    String title = titleController.text.trim();
-    String description = descriptionController.text.trim();
+  Future<void> fetchTasks() async {
+    setState(() => isLoading = true);
+    final fetchedTasks = await TaskAPI.getTasks();
+    setState(() {
+      isLoading = false;
+      tasks = fetchedTasks;
+    });
+  }
 
-    if (title.isEmpty || description.isEmpty) {
-      _showSnackBar("❌ Task title and description cannot be empty!");
-      return;
-    }
-
-    await TaskAPI.addTask(title, description);
+  Future<void> addTask() async {
+    if (titleController.text.trim().isEmpty) return; // ✅ Prevent empty tasks
+    await TaskAPI.addTask(titleController.text, descriptionController.text);
     titleController.clear();
     descriptionController.clear();
-    setState(() {}); // Refresh UI
+    fetchTasks();
   }
 
-  void completeTask(int taskId) async {
+  Future<void> completeTask(int taskId) async {
     await TaskAPI.updateTaskStatus(taskId, "completed");
-    setState(() {}); // Refresh UI
+    fetchTasks();
   }
 
-  void deleteTask(int taskId) async {
+  Future<void> deleteTask(int taskId) async {
     await TaskAPI.deleteTask(taskId);
-    setState(() {}); // Refresh UI
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: const TextStyle(color: Colors.white)),
-      backgroundColor: Colors.black87,
-    ));
+    fetchTasks();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Dark Theme
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text(
           "Task Manager",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.black.withAlpha((0.9 * 255).toInt()), // ✅ Fixed opacity issue
+        backgroundColor: Colors.black.withAlpha(230), // ✅ Replaced withAlpha()
         centerTitle: true,
         elevation: 5,
       ),
@@ -73,47 +73,75 @@ class TaskScreenState extends State<TaskScreen> {
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🔹 Header
                 const Text(
                   "Your Tasks 📋",
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 const SizedBox(height: 10),
 
                 // 🔹 Glassmorphic Add Task Card
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha((0.07 * 255).toInt()), // ✅ Fixed opacity
+                    color: Colors.white.withAlpha(18), // ✅ Used withAlpha()
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white.withAlpha((0.2 * 255).toInt())),
+                    border: Border.all(color: Colors.white.withAlpha(51)), // ✅ Used withAlpha()
                   ),
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _buildTextField(
-                          titleController, "Task Title", Icons.title),
+                      // Task Title Input
+                      TextField(
+                        controller: titleController,
+                        decoration: InputDecoration(
+                          labelText: "Task Title",
+                          prefixIcon: const Icon(Icons.title, color: Colors.white70),
+                          filled: true,
+                          fillColor: Colors.white.withAlpha(18), // ✅ Used withAlpha()
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          labelStyle: const TextStyle(color: Colors.white),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
                       const SizedBox(height: 10),
-                      _buildTextField(descriptionController, "Task Description",
-                          Icons.description),
+
+                      // Task Description Input
+                      TextField(
+                        controller: descriptionController,
+                        decoration: InputDecoration(
+                          labelText: "Task Description",
+                          prefixIcon: const Icon(Icons.description, color: Colors.white70),
+                          filled: true,
+                          fillColor: Colors.white.withAlpha(18), // ✅ Used withAlpha()
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          labelStyle: const TextStyle(color: Colors.white),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
                       const SizedBox(height: 15),
 
-                      // Add Task Button
+                      // Add Task Button (Gradient)
                       ElevatedButton.icon(
-                        style: _buttonStyle(),
                         onPressed: addTask,
                         icon: const Icon(Icons.add, color: Colors.white),
-                        label: const Text(
-                          "Add Task",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        label: const Text("Add Task", style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purpleAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ],
@@ -123,163 +151,71 @@ class TaskScreenState extends State<TaskScreen> {
 
                 // 🔹 Task List Section
                 Expanded(
-                  child: FutureBuilder<List<dynamic>>(
-                    future: fetchTasks(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                            child:
-                                CircularProgressIndicator(color: Colors.white));
-                      }
-
-                      final tasks = snapshot.data ?? [];
-                      if (tasks.isEmpty) {
-                        return _buildEmptyState();
-                      }
-
-                      return ListView.builder(
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = tasks[index];
-                          return _buildTaskCard(task);
-                        },
-                      );
-                    },
-                  ),
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                      : tasks.isEmpty
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                //Lottie.asset('assets/animations/empty_tasks.json', width: 200),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "No tasks yet! Add a new task to get started.",
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              itemCount: tasks.length,
+                              itemBuilder: (context, index) {
+                                final task = tasks[index];
+                                return Card(
+                                  elevation: 5,
+                                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  color: Colors.white.withAlpha(18), // ✅ Used withAlpha()
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.deepPurple.shade100,
+                                      child: Icon(Icons.task_alt, color: Colors.deepPurple.shade700),
+                                    ),
+                                    title: Text(
+                                      task['title'],
+                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                    ),
+                                    subtitle: Text(
+                                      task['description'] ?? "No Description",
+                                      style: const TextStyle(color: Colors.white70),
+                                    ),
+                                    trailing: task['status'] == "completed"
+                                        ? const Icon(Icons.check_circle, color: Colors.green, size: 28)
+                                        : ElevatedButton(
+                                            onPressed: () => completeTask(task['task_id']),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.purpleAccent,
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Text("Complete"),
+                                          ),
+                                    onLongPress: () => deleteTask(task['task_id']),
+                                  ),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  // 🔹 Task Input Field Builder
-  Widget _buildTextField(
-      TextEditingController controller, String label, IconData icon) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.white70),
-        filled: true,
-        fillColor: Colors.white.withAlpha((0.07 * 255).toInt()), // ✅ Fixed opacity
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        labelStyle: const TextStyle(color: Colors.white),
-      ),
-      style: const TextStyle(color: Colors.white),
-    );
-  }
-
-  // 🔹 Task Card Builder
-  Widget _buildTaskCard(Map<String, dynamic> task) {
-    return Card(
-      elevation: 5,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      color: Colors.white.withAlpha((0.07 * 255).toInt()), // ✅ Fixed opacity
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        leading: CircleAvatar(
-          backgroundColor: Colors.deepPurple.shade100,
-          child: Icon(Icons.task_alt, color: Colors.deepPurple.shade700),
-        ),
-        title: Text(
-          task['title'],
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        subtitle: Text(
-          task['description'] ?? "No Description",
-          style: const TextStyle(color: Colors.white70),
-        ),
-        trailing: task['status'] == "completed"
-            ? const Icon(Icons.check_circle, color: Colors.green, size: 28)
-            : ElevatedButton(
-                style: _buttonStyle(),
-                onPressed: () => completeTask(task['task_id']),
-                child: const Text("Complete"),
-              ),
-        onLongPress: () => deleteTask(task['task_id']),
-      ),
-    );
-  }
-
-  // 🔹 Empty State UI
-  Widget _buildEmptyState() {
-  return SingleChildScrollView(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Empty Box Illustration
-        Icon(
-          Icons.inbox,
-          size: 100,
-          color: Colors.white24,
-        ),
-        const SizedBox(height: 10),
-
-        // "No Tasks Yet" Message
-        const Text(
-          "No tasks yet!",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 5),
-
-        // "Add a New Task" Subtitle
-        const Text(
-          "Add a new task to get started.",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 20),
-
-        // "Add Task" Button
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purpleAccent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Tap on 'Add Task' to create a new task!"),
-                backgroundColor: Colors.black87,
-              ),
-            );
-          },
-          icon: const Icon(Icons.add_task),
-          label: const Text("Add Task"),
-        ),
-      ],
-    ),
-  );
-}
-
-  // 🔹 Button Style
-  ButtonStyle _buttonStyle() {
-    return ElevatedButton.styleFrom(
-      backgroundColor: Colors.purpleAccent,
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }

@@ -70,7 +70,7 @@ class ProfileScreenState extends State<ProfileScreen> { // ✅ Made public
   void navigateToHome() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      MaterialPageRoute(builder: (context) => HomeScreen()),
       (route) => false, // Removes all previous routes, ensuring it goes directly to HomeScreen
     );
   }

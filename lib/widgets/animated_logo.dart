@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AnimatedLogo extends StatelessWidget {
-  const AnimatedLogo({Key? key}) : super(key: key); // ✅ Added key parameter
+  const AnimatedLogo({super.key}); // ✅ Used super.key
 
   @override
   Widget build(BuildContext context) {
