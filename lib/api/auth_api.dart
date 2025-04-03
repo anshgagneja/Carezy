@@ -1,22 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:io';
+
 
 class AuthAPI {
   static final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // 🔹 Determine Base URL
   static String getBaseUrl() {
-    if (kIsWeb) {
-      return "http://localhost:5000"; // Web
-    } else if (Platform.isAndroid) {
-      return "http://192.168.1.7:5000"; // Android Emulator
-    } else {
-      return "http://localhost:5000"; // iOS & real devices
-    }
+    return "https://carezy-backend.onrender.com"; // Live Backend URL
   }
+
 
   // 🔹 User Signup
   static Future<Map<String, dynamic>?> signup(String name, String email, String password) async {

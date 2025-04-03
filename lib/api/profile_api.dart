@@ -2,15 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter/foundation.dart';
 
 class ProfileAPI {
   static final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // 🔹 Determine Base URL
   static String getBaseUrl() {
-    if (kIsWeb) return "http://192.168.1.7:5000"; // Web
-    return Platform.isAndroid ? "http://192.168.1.7:5000" : "http://localhost:5000";
+    return "https://carezy-backend.onrender.com"; // Live Backend URL
   }
 
   // 🔹 Fetch User Profile
@@ -57,11 +55,14 @@ class ProfileAPI {
       Uri.parse("${getBaseUrl()}/api/user/upload-image"),
     )
       ..headers['Authorization'] = 'Bearer $token'
-      ..files.add(await http.MultipartFile.fromPath('profileImage', imageFile.path));
+      ..files.add(
+          await http.MultipartFile.fromPath('profileImage', imageFile.path));
 
     var response = await request.send();
     final responseData = await response.stream.bytesToString();
 
-    return response.statusCode == 200 ? jsonDecode(responseData)['profile_image'] : null;
+    return response.statusCode == 200
+        ? jsonDecode(responseData)['profile_image']
+        : null;
   }
 }
