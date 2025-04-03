@@ -13,13 +13,10 @@ import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Load .env file for environment variables
   await dotenv.load(fileName: "assets/.env");
 
   try {
     if (kIsWeb) {
-      // Firebase initialization for web
       await Firebase.initializeApp(
         options: FirebaseOptions(
           apiKey: dotenv.env['FIREBASE_API_KEY']!,
@@ -32,30 +29,24 @@ void main() async {
         ),
       );
     } else {
-      // Firebase initialization for non-web platforms
       await Firebase.initializeApp();
     }
   } catch (e) {
-    runApp(ErrorApp(message: "Failed to initialize Firebase: $e"));
+    runApp(ErrorApp(message: "Failed to initialize Firebase"));
     return;
   }
 
-  // Retrieve token and user ID from secure storage
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   String? token;
   String? userId;
 
   try {
     token = await storage.read(key: "token");
     userId = await storage.read(key: "userId");
-  } catch (e) {
-    print("❌ Error retrieving token or userId: $e");
+  } catch (_) {
     token = null;
     userId = null;
   }
-
-  print("🔹 Stored Token: $token");
-  print("🔹 Stored User ID: $userId");
 
   runApp(CarezyApp(token: token, userId: userId));
 }
@@ -64,7 +55,7 @@ class CarezyApp extends StatelessWidget {
   final String? token;
   final String? userId;
 
-  CarezyApp({this.token, this.userId});
+  const CarezyApp({super.key, this.token, this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -73,22 +64,21 @@ class CarezyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      initialRoute: (token != null && userId != null) ? '/home' : '/login', // ✅ Ensure user is authenticated
+      initialRoute: (token != null && userId != null) ? '/home' : '/login',
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/signup': (context) => SignupScreen(),
-        '/home': (context) => HomeScreen(),
-        '/tasks': (context) => TaskScreen(),
-        '/chatbot': (context) => ChatBotScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/tasks': (context) => const TaskScreen(),
+        '/chatbot': (context) => const ChatBotScreen(),
       },
     );
   }
 }
 
-// 🔹 Fallback error screen when Firebase initialization fails
 class ErrorApp extends StatelessWidget {
   final String message;
-  ErrorApp({required this.message});
+  const ErrorApp({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +87,7 @@ class ErrorApp extends StatelessWidget {
         body: Center(
           child: Text(
             message,
-            style: TextStyle(fontSize: 18, color: Colors.red),
+            style: const TextStyle(fontSize: 18, color: Colors.red),
           ),
         ),
       ),

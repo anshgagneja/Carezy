@@ -7,9 +7,10 @@ class AppTheme {
     brightness: Brightness.light,
     primaryColor: Colors.blue,
     scaffoldBackgroundColor: Colors.white,
-    textTheme: GoogleFonts.poppinsTextTheme().apply(
-      bodyColor: Colors.black87,
-      displayColor: Colors.black87,
+    textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+      bodyLarge: GoogleFonts.poppins(color: Colors.black87),
+      bodyMedium: GoogleFonts.poppins(color: Colors.black87),
+      titleLarge: GoogleFonts.poppins(fontWeight: FontWeight.w600),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.blue,
@@ -26,14 +27,9 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        textStyle: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        padding: EdgeInsets.symmetric(vertical: 14, horizontal: 28),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 28),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 6,
         shadowColor: Colors.blueAccent,
       ),
@@ -47,25 +43,17 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.blue, width: 2),
+        borderSide: const BorderSide(color: Colors.blue, width: 2),
       ),
-      labelStyle: GoogleFonts.poppins(
-        fontSize: 14,
-        color: Colors.blue.shade700,
-      ),
-      hintStyle: GoogleFonts.poppins(
-        fontSize: 14,
-        color: Colors.blue.shade300,
-      ),
+      labelStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.blue.shade700),
+      hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.blue.shade300),
     ),
     cardTheme: CardTheme(
       elevation: 6,
       shadowColor: Colors.blue.shade200,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
       elevation: 6,
@@ -77,9 +65,10 @@ class AppTheme {
     brightness: Brightness.dark,
     primaryColor: Colors.deepPurple,
     scaffoldBackgroundColor: Colors.black,
-    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).apply(
-      bodyColor: Colors.white70,
-      displayColor: Colors.white70,
+    textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+      bodyLarge: GoogleFonts.poppins(color: Colors.white70),
+      bodyMedium: GoogleFonts.poppins(color: Colors.white70),
+      titleLarge: GoogleFonts.poppins(fontWeight: FontWeight.w600),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.deepPurple,
@@ -96,14 +85,9 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
-        textStyle: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        padding: EdgeInsets.symmetric(vertical: 14, horizontal: 28),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 28),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 6,
         shadowColor: Colors.deepPurpleAccent,
       ),
@@ -117,25 +101,17 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2),
+        borderSide: const BorderSide(color: Colors.deepPurpleAccent, width: 2),
       ),
-      labelStyle: GoogleFonts.poppins(
-        fontSize: 14,
-        color: Colors.deepPurple.shade300,
-      ),
-      hintStyle: GoogleFonts.poppins(
-        fontSize: 14,
-        color: Colors.deepPurple.shade600,
-      ),
+      labelStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.deepPurple.shade300),
+      hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.deepPurple.shade600),
     ),
     cardTheme: CardTheme(
       elevation: 6,
       shadowColor: Colors.deepPurple.shade700,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: Colors.deepPurple,
       foregroundColor: Colors.white,
       elevation: 6,

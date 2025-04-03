@@ -4,48 +4,89 @@ import '../api/auth_api.dart';
 import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key}); // ✅ Used super.key
+
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  SignupScreenState createState() => SignupScreenState(); // ✅ Public class
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class SignupScreenState extends State<SignupScreen> { // ✅ Made public
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   bool isLoading = false;
 
+  // 🛑 Email Validation Function
+  bool isValidEmail(String email) {
+    return RegExp(r"^[^@]+@[^@]+\.[^@]+").hasMatch(email);
+  }
+
+  // 🔒 Password Validation Function
+  bool isValidPassword(String password) {
+    return password.length >= 6 &&
+        RegExp(r'[0-9]').hasMatch(password) && // At least 1 number
+        RegExp(r'[A-Za-z]').hasMatch(password) && // At least 1 letter
+        RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password); // At least 1 special character
+  }
+
+  // 🚀 Signup Function
   void signup() async {
-    if (passwordController.text != confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Passwords do not match!")),
-      );
+    String name = nameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+    String confirmPassword = confirmPasswordController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      showSnackBar("❌ All fields are required!");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      showSnackBar("❌ Please enter a valid email address!");
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      showSnackBar("❌ Password must be at least 6 characters long and contain at least 1 letter, 1 number, and 1 special character!");
+      return;
+    }
+
+    if (password != confirmPassword) {
+      showSnackBar("❌ Passwords do not match!");
       return;
     }
 
     setState(() => isLoading = true);
 
-    final success = await AuthAPI.signup(
-      nameController.text,
-      emailController.text,
-      passwordController.text,
-    );
+    try {
+      final success = await AuthAPI.signup(name, email, password);
+      
+      if (!mounted) return;
+      setState(() => isLoading = false);
 
-    setState(() => isLoading = false);
-
-    if (success != null && success['token'] != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("✅ Account created successfully! Please login.")),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Signup failed. Please try again.")),
-      );
+      if (success?['token'] != null) {
+        showSnackBar("✅ Account created successfully! Please login.");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      } else {
+        String errorMessage = success?['message'] ?? "Signup failed. Please try again.";
+        showSnackBar("❌ $errorMessage");
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => isLoading = false);
+      showSnackBar("❌ An error occurred: $e");
     }
+  }
+
+  // 🍔 Snackbar Function
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
+    );
   }
 
   @override
@@ -55,7 +96,7 @@ class _SignupScreenState extends State<SignupScreen> {
         children: [
           // 🎨 Gradient Background
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
                 begin: Alignment.topCenter,
@@ -75,7 +116,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.3),
+                    color: Colors.blueAccent.withAlpha(77), // ✅ Replaced withAlpha()
                     blurRadius: 150,
                     spreadRadius: 50,
                   ),
@@ -96,27 +137,27 @@ class _SignupScreenState extends State<SignupScreen> {
                     width: 180,
                     height: 180,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // 🏆 Signup Form Card
                   Container(
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withAlpha(25), // ✅ Replaced withAlpha()
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      border: Border.all(color: Colors.white.withAlpha(77)), // ✅ Fixed transparency
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blueAccent.withOpacity(0.2),
+                          color: Colors.blueAccent.withAlpha(51), // ✅ Fixed transparency
                           blurRadius: 20,
                           spreadRadius: 3,
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
+                        const Text(
                           "Create Account",
                           style: TextStyle(
                             fontSize: 26,
@@ -125,46 +166,49 @@ class _SignupScreenState extends State<SignupScreen> {
                             letterSpacing: 1.2,
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
                         // 📝 Name Field
                         _buildTextField(nameController, "Name", Icons.person),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
 
                         // 📧 Email Field
                         _buildTextField(emailController, "Email", Icons.email),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
 
                         // 🔒 Password Field
                         _buildTextField(passwordController, "Password", Icons.lock, isPassword: true),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
 
                         // 🔄 Confirm Password Field
                         _buildTextField(confirmPasswordController, "Confirm Password", Icons.lock_outline, isPassword: true),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
                         // 🚀 Signup Button
                         isLoading
-                            ? CircularProgressIndicator(color: Colors.white)
+                            ? const CircularProgressIndicator(color: Colors.white)
                             : ElevatedButton(
-                                onPressed: signup,
-                                child: Text("Sign Up", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blueAccent,
                                   foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
+                                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25),
                                   ),
                                   elevation: 8,
-                                  shadowColor: Colors.blueAccent.withOpacity(0.5),
+                                  shadowColor: Colors.blueAccent.withAlpha(127), // ✅ Fixed transparency
+                                ),
+                                onPressed: signup,
+                                child: const Text(
+                                  "Sign Up",
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                               ),
                       ],
                     ),
                   ),
 
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
                   // 🔄 Navigate to Login
                   GestureDetector(
@@ -174,7 +218,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         MaterialPageRoute(builder: (context) => LoginScreen()),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       "Already have an account? Login",
                       style: TextStyle(
                         color: Colors.blueAccent,
@@ -197,18 +241,15 @@ class _SignupScreenState extends State<SignupScreen> {
     return TextField(
       controller: controller,
       obscureText: isPassword,
-      style: TextStyle(color: Colors.white, fontSize: 16),
+      style: const TextStyle(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.white70),
+        hintStyle: const TextStyle(color: Colors.white70),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.white.withAlpha(25), // ✅ Fixed transparency
         prefixIcon: Icon(icon, color: Colors.blueAccent),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
       ),
     );
   }
