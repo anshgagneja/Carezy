@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart'; // For animations
+import 'package:flutter/material.dart'; // For animations
 import '../api/task_api.dart';
 
 class TaskScreen extends StatefulWidget {
