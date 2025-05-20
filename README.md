@@ -6,7 +6,7 @@
 
 ## 🔗 Live Demo
 
-- 🧠 **Frontend App**: [https://carezy-gwim.vercel.app](https://carezy-gwim.vercel.app)
+- 🧠 **Frontend App**: [https://carezy.vercel.app](https://carezy.vercel.app)
 - 🔐 **Backend API**: [https://carezy.xyz](https://carezy.xyz)
 
 ---
@@ -92,7 +92,7 @@ Output Directory: build/web
 
 Build Command: (leave blank)
 
-Live: https://carezy-gwim.vercel.app
+Live: https://carezy.vercel.app
 
 ## Contributing
 I welcome contributions! Feel free to fork the repo and submit pull requests.
