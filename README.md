@@ -1,23 +1,44 @@
-# Carezy
+# 🌿 Carezy
 
-Carezy is a mental health app designed to provide users with a seamless and engaging experience to enhance their mental well-being. The app integrates Firebase authentication, JWT-based authentication, AI-powered mood analysis, and a robust backend to ensure a smooth and secure user experience.
+**Carezy** is a full-stack mental health companion app that helps users track their well-being, manage tasks, receive AI-driven insights, and interact with a smart assistant — all in a secure and personalized environment.
 
-## Features
-- **User Authentication**: Secure login and signup using Firebase Authentication and JWT.
-- **Home Screen**: A dashboard providing access to key features.
-- **Task Management Screen**: Users can create and manage their daily tasks.
-- **Mood Tracking**: Users can log their mood and receive AI-powered suggestions.
-- **Mood-Based Music**: Get music recommendations based on the logged mood.
-- **Mood Trends Graph**: Visual representation of mood trends using `fl_chart`.
-- **Profile Screen**: Allows users to manage their personal details and preferences.
-- **Carezy Companion**: A virtual assistant that first asks a set of questions and then generates a response accordingly. After the initial assessment, users can continue chatting with it like a bot for further guidance and support.
+---
 
-## Tech Stack
-- **Frontend**: Flutter
-- **Backend**: Node.js with Express.js
-- **Database**: PostgreSQL
-- **Authentication**: Firebase Authentication & JWT
-- **AI Integration**: AI-powered mood analysis and chatbot interaction
+## 🔗 Live Demo
+
+- 🧠 **Frontend App**: [https://carezy-gwim.vercel.app](https://carezy-gwim.vercel.app)
+- 🔐 **Backend API**: [https://carezy.xyz](https://carezy.xyz)
+
+---
+
+## ✨ Features
+
+- 🔐 **JWT Authentication**: Secure login and signup using token-based access.
+- 📅 **Task Management**: Add, update, complete, and delete your daily goals.
+- 😊 **Mood Tracking**: Log your mood and attach daily notes.
+- 🤖 **AI Mood Suggestions**: Gemini AI gives personalized suggestions.
+- 🎵 **Mood-Based Music**: Get recommended songs from YouTube based on mood.
+- 📊 **Mood Trends**: Visual graph showing mood over time.
+- 💬 **Carezy Companion**: A friendly AI assistant that begins with an emotional check-in and continues as a supportive chatbot.
+- 🖼️ **Profile Management**: Update your name and profile image.
+- 📧 **Password Reset via OTP**: Secure reset using email-based OTP.
+- 🔒 **NGINX + HTTPS + PM2 on AWS EC2** for secure and scalable hosting.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer       | Stack                                       |
+|-------------|---------------------------------------------|
+| **Frontend**| Flutter                                     |
+| **Backend** | Node.js + Express.js                        |
+| **Database**| PostgreSQL (AWS RDS)                        |
+| **AI**      | Gemini AI for mood analysis and chatbot     |
+| **DevOps**  | AWS EC2, PM2, NGINX, Let's Encrypt (SSL)    |
+| **Hosting** | Vercel (Frontend) + EC2 (Backend)           |
+| **Extras**  | YouTube API for music, Gmail for OTPs       |
+
+---
 
 ## Installation & Setup
 ### Prerequisites
@@ -26,32 +47,48 @@ Carezy is a mental health app designed to provide users with a seamless and enga
 - PostgreSQL installed and configured
 - Firebase project set up with Authentication enabled
 
-### Backend Setup
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/anshgagneja/carezy.git
-   cd carezy/carezy_backend
-   ```
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-3. Configure environment variables:
-   Create a `.env` file in the `carezy_backend` directory and add the necessary variables (database credentials, Firebase config, etc.).
-4. Start the backend server:
-   ```sh
-   npm start
-   ```
 
-### Frontend Setup
-1. Install dependencies:
-   ```sh
-   flutter pub get
-   ```
-2. Run the app:
-   ```sh
-   flutter run
-   ```
+---
+
+## 🚀 Getting Started
+
+### 🔧 Backend (Node.js + PostgreSQL)
+
+```bash
+cd carezy/carezy-backend/
+npm install
+```
+Create a .env file:
+```bash
+PORT=5000
+DB_HOST=your-rds-endpoint
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_PORT=5432
+DB_DATABASE=postgres
+JWT_SECRET=your_jwt_secret
+EMAIL_USER=your_gmail
+EMAIL_PASS=your_app_password
+YOUTUBE_API_KEY=your_key
+GEMINI_API_KEY=your_key
+```
+
+Start server:
+```bash
+pm2 start server.js
+```
+Ensure NGINX is configured for HTTPS at https://carezy.xyz.
+
+🎯 Frontend (Flutter Web)
+```bash
+flutter build web
+```
+
+Then push build/web to GitHub and deploy to Vercel:
+Framework: Other
+Output Directory: build/web
+Build Command: (leave blank)
+Live: https://carezy-gwim.vercel.app
 
 ## Contributing
 I welcome contributions! Feel free to fork the repo and submit pull requests.
