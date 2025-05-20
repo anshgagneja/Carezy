@@ -85,9 +85,13 @@ flutter build web
 ```
 
 Then push build/web to GitHub and deploy to Vercel:
+
 Framework: Other
+
 Output Directory: build/web
+
 Build Command: (leave blank)
+
 Live: https://carezy-gwim.vercel.app
 
 ## Contributing
