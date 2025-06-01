@@ -8,7 +8,7 @@ class AuthAPI {
 
   // 🔹 Determine Base URL
   static String getBaseUrl() {
-    return "https://carezy-backend.onrender.com"; // Live Backend URL
+    return "https://carezy.xyz"; // Live Backend URL
   }
 
 

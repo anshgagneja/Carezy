@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MoodAPI {
-  static const String _baseUrl = "https://carezy-backend.onrender.com";
+  static const String _baseUrl = "https://carezy.xyz";
   static final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // 🔹 Fetch Mood History (Sorted by `created_at`)
