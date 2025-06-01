@@ -46052,7 +46052,7 @@ s=1
 break}m.a6k(a)
 m.a4(new A.a5f(m))
 p=5
-j=A.cV("https://carezy-backend.onrender.com/chatbot",0,null)
+j=A.cV("https://carezy.xyz/chatbot",0,null)
 i=t.N
 h=A.a8(["Content-Type","application/json","Authorization","Bearer "+A.k(f)],i,i)
 s=8
