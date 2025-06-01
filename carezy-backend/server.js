@@ -185,7 +185,7 @@ app.put('/api/user/update-profile', authenticate, async (req, res) => {
 // 🔹 Upload Profile Image
 app.post('/api/user/upload-image', authenticate, upload.single('profileImage'), async (req, res) => {
   try {
-      const imagePath = `http://${DB_HOST}:5000/uploads/${req.file.filename}`;
+      const imagePath = `https://carezy.xyz/uploads/${req.file.filename}`;
 
       await pool.query('UPDATE users SET profile_image = $1 WHERE id = $2', [imagePath, req.user.userId]);
 
