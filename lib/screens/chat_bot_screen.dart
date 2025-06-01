@@ -16,7 +16,7 @@ class ChatBotScreenState extends State<ChatBotScreen> {
   bool _isLoading = false;
 
   // ✅ Backend URL
-  final String _backendUrl = 'https://carezy-backend.onrender.com/chatbot';
+  final String _backendUrl = 'https://carezy.xyz/chatbot';
 
   // ✅ Secure storage instance (final for efficiency)
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
